@@ -1,10 +1,15 @@
 import requests
+from bokeh.io import webdriver
 from bs4 import BeautifulSoup
 import re
 import jieba
 from wordcloud import WordCloud, ImageColorGenerator, STOPWORDS
 import matplotlib.pyplot as plt
 import pandas as pd
+import json
+import time, random
+from pandas import Series, DataFrame
+from Spider import Spider
 
 
 class Video:
@@ -116,14 +121,69 @@ class Video:
         plt.axis('off')
         plt.show()
 
+    def get_oid(self, url):
+        headers = {
+            'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.75 Safari/537.36'}
+        r = requests.get(url, headers=headers)
+        res = r.text
+        patten = '<meta data-vue-meta="true" itemprop="url" content="https://www.bilibili.com/video/av(.*?)/">'
+        oid = re.findall(patten, res)
+        aim_oid = oid[0]
+        patten1 = '<meta data-vue-meta="true" property="og:title" content="(.*?)">'
+        video_title = re.findall(patten1, res)
+        if video_title:
+            self.video_title = video_title[0].split('_哔哩哔哩')[0]
+        return aim_oid
+
+    def comments_parse(self):
+
+
+        oid = self.get_oid(f'https://www.bilibili.com/video/{self.bvid}')
+        n = 1
+        headers={'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+                               'AppleWebKit/537.36 (KHTML, like Gecko) '
+                               'Chrome/86.0.4240.75 Safari/537.36'}
+        df = []
+        try:
+            while True:
+                url = f'https://api.bilibili.com/x/v2/reply?jsonp=jsonp&pn={n}&type=1&oid={oid}&sort=2'
+                print(url)
+                r = requests.get(url.format(n), headers=headers)
+                _json = json.loads(r.text)
+                n += 1
+                for replie in _json['data']['replies']:
+                    item = {}
+                    item['user_id'] = replie.get('member').get('mid')  # 用户id
+                    item['user_name'] = replie.get('member').get('uname')  # 用户名
+                    item['user_sex'] = replie.get('member').get('sex')  # 性别
+                    item['user_level'] = replie.get('member').get('level_info').get('current_level')  # 等级
+                    vip = replie.get('member').get('vip').get('vipStatus')  # 是否vip
+                    if vip == 1:
+                        item['user_is_vip'] = 'Y'
+                    elif vip == 0:
+                        item['user_is_vip'] = 'N'
+                    comment_date = replie.get('ctime')  # 评论日期
+                    timeArray = time.localtime(comment_date)
+                    otherStyleTime = time.strftime("%Y-%m-%d %H:%M:%S", timeArray)
+                    item['apprecate_count'] = replie.get('like')  # 点赞数
+                    item['reply_count'] = replie.get('rcount')  # 回复数
+                    item['comment_date'] = otherStyleTime
+                    item['comment'] = replie.get('content').get('message')  # 评论内容
+                    df.append(item)
+                time.sleep(random.random())
+        except:
+            pass
+        df = DataFrame(df)
+        return df
 
 if __name__ == "__main__":
     v = Video()
     v.bvid = 'BV15y4y177aj'
     #v.generate_wordscloud_1()
     #v.generate_wordscloud_2()
+    v.comments_parse().to_csv('comments.csv')
 
-    v1 = Video()
-    v1.bvid = 'BV1aK411P7hM'
-    v1.generate_wordscloud_1()
-    v1.generate_wordscloud_2()
+
+
+
+
