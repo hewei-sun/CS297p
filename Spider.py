@@ -2,12 +2,14 @@ import requests
 from bs4 import BeautifulSoup
 
 class Spider:
-    def __init__(self, url):
+    def __init__(self, url, headers=None, coockies=None):
         self.url = url
+        self.headers = headers
+        self.coockies = coockies
 
     def getHTML(self):
         try:
-            response = requests.get(url=self.url)
+            response = requests.get(url=self.url, headers=self.headers)
             return response.text
         except:
             return "Sorry, due to some reason, you failed to visit the page."
