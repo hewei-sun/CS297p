@@ -24,7 +24,7 @@ cookie = {'Cookie' : "_uuid=21EB14CF-CBA0-6FDC-821F-D68A14A5C51409351infoc; "
 
 def getFollowersByID(userID): # return numFollowings and numFollowers
     url = f'https://api.bilibili.com/x/relation/stat?vmid={userID}&jsonp=jsonp'
-    r = requests.session().get(url, headers=headers)
+    r = requests.session().get(url, headers=headers, cookies=cookie)
     json = r.json()
     numFollowings, numFollowers = json['data']['following'], json['data']['follower']
     return numFollowings, numFollowers
@@ -80,7 +80,6 @@ def crawlUpFollowing():
     upList = [item for (item,) in mysqlconnect.queryOutCome(sql)]
     random.shuffle(upList)
     for up in upList:
-        print('Finish Up {}'.format(up))
         for i in range(1,6):
             url = f'https://api.bilibili.com/x/relation/followings?vmid={up}&pn={i}&ps=20&order=desc&jsonp=jsonp'
             _json = requests.session().get(url, headers=headers, cookies=cookie).json()
@@ -88,11 +87,11 @@ def crawlUpFollowing():
                 # Either {"code":22115,"message":"用户已设置隐私，无法查看","ttl":1}
                 # Or you are blocked....
                 missed.append(up)
-                print('.....')
+                print('Failed')
                 break
             for item in _json.get('data').get('list'):
                 mid = item['mid']
-                sql = 'SELECT 1 FROM `PossibleTopUp` WHERE `ID`={}'.format(mid)
+                sql = 'SELECT 1 FROM `PossibleTopUp` WHERE `ID`={};'.format(mid)
                 if mysqlconnect.queryOutCome(sql): # up existed
                     continue
                 numFollowings, numFollowers = getFollowersByID(mid)
@@ -103,6 +102,7 @@ def crawlUpFollowing():
                     mysqlconnect.queryOutCome(sql)
                 time.sleep(random.random())
             time.sleep(random.random())
+        print('Finish Up {}'.format(up))
         time.sleep(random.random())
     print(missed)
 
@@ -143,10 +143,11 @@ if __name__ == "__main__":
     # 1. Refresh PossibleTopUp
     #refreshPossibleTopUp()
     # 2. Crawl NewestTop100's following, add newly added one into PossibleTopUP
-    #crawlUpFollowing()
+    crawlUpFollowing()
     # 3. Update Top100
     #updateTop100()
     # 4. Collect today's date's data for every top100 Up
+    '''
     mysqlconnect = MysqlConnect()
     mysqlconnect.getConnect()
     sql = "SELECT `ID` from `NewestTop100`;"
@@ -156,4 +157,5 @@ if __name__ == "__main__":
         #sql = "DROP TABLE IF EXISTS `UP{}`;".format(up)
         #mysqlconnect.queryOutCome(sql)
         updateUpByDate(up, str(datetime.now().date()))
+    '''
 
