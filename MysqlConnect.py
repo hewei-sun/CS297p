@@ -16,11 +16,11 @@ class MysqlConnect:  # Connect to MySQL
         # create the table PossibleTopUp
         table1 = '''CREATE TABLE `PossibleTopUp`
                         (
-                            `ID` VARCHAR(40) UNIQUE,
-                            `Followings` VARCHAR(40), 
-                            `Followers` VARCHAR(40),
-                            `Likes` VARCHAR(40),
-                            `Views` VARCHAR(40),
+                            `ID` INT UNIQUE,
+                            `Followings` INT, 
+                            `Followers` BIGINT,
+                            `Likes` BIGINT,
+                            `Views` BIGINT,
                              PRIMARY KEY(ID)
                         )ENGINE=innodb DEFAULT CHARSET=utf8;'''
         db = self.getConnect()
@@ -33,7 +33,7 @@ class MysqlConnect:  # Connect to MySQL
         # create the table for up's following
         table2 = '''CREATE TABLE `NewestTop100`
                         (
-                            `ID` VARCHAR(40) UNIQUE,
+                            `ID` INT UNIQUE,
                              PRIMARY KEY(ID)
                         )ENGINE=innodb DEFAULT CHARSET=utf8;'''
         db = self.getConnect()
@@ -48,20 +48,20 @@ class MysqlConnect:  # Connect to MySQL
         try:
             cursor.execute(sql.encode('utf8'))
             db.commit()
-            print("sucessed...")
+            print("succeed...")
         except:
             print("failed...")
             db.rollback()
 
     def getInsertToTable1Sql(self, tableName, ID, numFollowings, numFollowers, nunmLikes, numViews):
         sql = '''
-            INSERT INTO `{}` VALUES ('{}','{}','{}','{}','{}');
+            INSERT INTO `{}` VALUES ({}, {}, {}, {}, {});
             '''.format(tableName, ID, numFollowings, numFollowers, nunmLikes, numViews)
         return sql
 
     def getInsertToTable2Sql(self, tableName, ID):
         sql = '''
-            INSERT INTO `{}` VALUES ('{}');
+            INSERT INTO `{}` VALUES ({});
             '''.format(tableName, ID)
         return sql
 
