@@ -24,28 +24,30 @@ def getFollowersByID(userID): # return numFollowings and numFollowers
     url = f'https://api.bilibili.com/x/relation/stat?vmid={userID}&jsonp=jsonp'
     r = ''
     try:
-        r = requests.session().get(url, headers=headers, timeout=1.5)
+        r = requests.session().get(url, headers=headers, timeout=5)
         json = r.json()
         if not json['data']:
             print('Banned at {}'.format(url))
         numFollowings, numFollowers = json['data']['following'], json['data']['follower']
         return numFollowings, numFollowers
     except:
-        print("Sorry, due to some reason, you failed to visit the page.\n{}".format(url), '\n',r.text)
+        if r: print(r.text)
+        print("Sorry, due to some reason, you failed to visit the page.\n{}".format(url))
         return 0,0
 
 def getLikesByID(userID): # return numLikes and numViews
     url = f'https://api.bilibili.com/x/space/upstat?mid={userID}&jsonp=jsonp'
     r = ''
     try:
-        r = requests.session().get(url, headers=headers, timeout=1.5)
+        r = requests.session().get(url, headers=headers, timeout=5)
         json = r.json()
         if not json['data']:
             print('Banned at {}'.format(url))
         numLikes, numViews = json['data']['likes'], json['data']['archive']['view']
         return numLikes, numViews
     except:
-        print("Sorry, due to some reason, you failed to visit the page.\n{}".format(url), '\n', r.text)
+        if r: print(r.text)
+        print("Sorry, due to some reason, you failed to visit the page.\n{}".format(url))
         return 0, 0
 
 
