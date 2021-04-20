@@ -22,26 +22,28 @@ cookie = {'Cookie' : "_uuid=21EB14CF-CBA0-6FDC-821F-D68A14A5C51409351infoc; "
 def getFollowersByID(userID): # return numFollowings and numFollowers
     url = f'https://api.bilibili.com/x/relation/stat?vmid={userID}&jsonp=jsonp'
     try:
-        r = requests.session().get(url, headers=headers, cookies = cookie, timeout=5)
+        r = requests.session().get(url, headers=headers, cookies = cookie, timeout=1.5)
         json = r.json()
         if not json['data']:
             print('Banned at {}'.format(url))
         numFollowings, numFollowers = json['data']['following'], json['data']['follower']
         return numFollowings, numFollowers
     except:
-        return "Sorry, due to some reason, you failed to visit the page.\n{}".format(url)
+        print("Sorry, due to some reason, you failed to visit the page.\n{}".format(url))
+        return 0,0
 
 def getLikesByID(userID): # return numLikes and numViews
     url = f'https://api.bilibili.com/x/space/upstat?mid={userID}&jsonp=jsonp'
     try:
-        r = requests.session().get(url, headers=headers, cookies = cookie, timeout=5)
+        r = requests.session().get(url, headers=headers, cookies = cookie, timeout=1.5)
         json = r.json()
         if not json['data']:
             print('Banned at {}'.format(url))
         numLikes, numViews = json['data']['likes'], json['data']['archive']['view']
         return numLikes, numViews
     except:
-        return "Sorry, due to some reason, you failed to visit the page.\n{}".format(url)
+        print("Sorry, due to some reason, you failed to visit the page.\n{}".format(url))
+        return 0, 0
 
 
 # Prepare table 1 from https://www.bilibili.com/read/cv10601513
@@ -84,18 +86,20 @@ def refreshPossibleTopUp():
 FAN_LIMIT=1000000
 def crawlUpFollowing():
     cookies={'Cookie' : "_uuid=21EB14CF-CBA0-6FDC-821F-D68A14A5C51409351infoc; "
-                        "buvid3=04D4D127-D90F-4AE0-9D9B-DC8F95DD365918550infoc; "
-                        "CURRENT_FNVAL=80; blackside_state=1; "
-                        "rpdid=|(k|Jkm|)R|l0J'uYu~Jm)~J); "
-                        "fingerprint=760a6edb8fa7f49e216ee581b4c60ece; "
-                        "buvid_fp=04D4D127-D90F-4AE0-9D9B-DC8F95DD365918550infoc; "
-                        "buvid_fp_plain=04D4D127-D90F-4AE0-9D9B-DC8F95DD365918550infoc; "
-                        "SESSDATA=6ed6c81c,1632952648,72649*41; "
-                        "bili_jct=e745c5f985c8e918670d7090d9443ae0; "
-                        "DedeUserID=19667955; DedeUserID__ckMd5=00a94d7f3200fdb4; sid=9b4dr68a; "
-                        "bsource=search_google; PVID=1; "
-                        "bfe_id=1e33d9ad1cb29251013800c68af42315"}
-    headers = {'referer':'https://space.bilibili.com/14583962/fans/follow',
+                          "buvid3=04D4D127-D90F-4AE0-9D9B-DC8F95DD365918550infoc; "
+                          "CURRENT_FNVAL=80; blackside_state=1; "
+                          "rpdid=|(k|Jkm|)R|l0J'uYu~Jm)~J); "
+                          "fingerprint=760a6edb8fa7f49e216ee581b4c60ece; "
+                          "buvid_fp=04D4D127-D90F-4AE0-9D9B-DC8F95DD365918550infoc; "
+                          "buvid_fp_plain=04D4D127-D90F-4AE0-9D9B-DC8F95DD365918550infoc; "
+                          "SESSDATA=6ed6c81c,1632952648,72649*41; "
+                          "bili_jct=e745c5f985c8e918670d7090d9443ae0; "
+                          "DedeUserID=19667955; "
+                          "DedeUserID__ckMd5=00a94d7f3200fdb4; "
+                          "sid=9b4dr68a; bsource=search_google; "
+                          "PVID=3; "
+                          "bfe_id=603589b7ce5e180726bfa88808aa8947"}
+    headers = {'referer':'https://space.bilibili.com/399966183/fans/follow',
                'user-agent':'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) '
                             'AppleWebKit/537.36 (KHTML, like Gecko) '
                             'Chrome/89.0.4389.114 Safari/537.36'}
@@ -108,16 +112,16 @@ def crawlUpFollowing():
     for up in upList:
         for i in range(1,6):
             url = f'https://api.bilibili.com/x/relation/followings?vmid={up}&pn={i}&ps=20&order=desc&jsonp=jsonp'
-            print(url)
+            #print(url)
             _json = requests.session().get(url, headers=headers, cookies=cookies, timeout=1.5).json()
             if _json['message']=="用户已设置隐私，无法查看" :
                 print('用户{}已设置隐私，无法查看'.format(up))
                 break
             elif not _json['data']:
-                print('Failed of visiting page.')
+                print('Failed of visiting page at {}'.format(url))
                 break
             elif not _json['data']['list']:
-                print('Empty Page')
+                print('Empty Page {}'.format(url))
                 break
 
             for item in _json.get('data').get('list'):
@@ -126,17 +130,23 @@ def crawlUpFollowing():
                 if mysqlconnect.queryOutCome(sql): # up existed
                     continue
                 numFollowings, numFollowers = getFollowersByID(mid)
-                time.sleep(random.random())
+                if(numFollowers==numFollowings==0): # Failed to visit the F&F page
+                    missed.append(mid)
+                    continue
+                time.sleep(random.random()*5)
                 if numFollowers>=FAN_LIMIT:
                     numLikes, numViews = getLikesByID(mid)
+                    if(numLikes==numViews==0): # Failed to visit the L&V poge
+                        missed.append(mid)
+                        continue
                     sql = '''INSERT IGNORE INTO `PossibleTopUp` 
                     VALUES ({}, {}, {}, {}, {});'''.format(mid, numFollowings, numFollowers, numLikes, numViews)
                     mysqlconnect.queryOutCome(sql)
                 time.sleep(random.random()*5)
-            time.sleep(random.random()*5)
+            time.sleep(random.random()*6)
         print('Finish Up {}'.format(up))
-        time.sleep(random.random()*5)
-    print(missed)
+        time.sleep(random.random()*7)
+    print('Failed to crawl these Ups:', missed)
 
 def updateTop100():
     mysqlconnect = MysqlConnect()
@@ -175,10 +185,11 @@ if __name__ == "__main__":
     # 1. Refresh PossibleTopUp
     #refreshPossibleTopUp()
     # 2. Crawl NewestTop100's following, add newly added one into PossibleTopUP
-    #crawlUpFollowing()
+    crawlUpFollowing()
     # 3. Update Top100
     #updateTop100()
     # 4. Collect today's date's data for every top100 Up
+    '''
     mysqlconnect = MysqlConnect()
     mysqlconnect.getConnect()
     sql = "SELECT `ID` from `NewestTop100`;"
@@ -188,4 +199,5 @@ if __name__ == "__main__":
         #sql = "DROP TABLE IF EXISTS `UP{}`;".format(up)
         #mysqlconnect.queryOutCome(sql)
         updateUpByDate(up, str(datetime.now().date()))
+    '''
 
