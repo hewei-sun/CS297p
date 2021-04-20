@@ -3,12 +3,12 @@ import time, random
 from datetime import datetime
 from MysqlConnect import MysqlConnect
 from Spider import Spider
+from selenium import webdriver
 
 user_agents=['Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36']
 headers = {'user-agent': random.choice(user_agents),
-           'referer': 'https://space.bilibili.com/14583962/'}
-
-cookie = {'Cookie' : "_uuid=21EB14CF-CBA0-6FDC-821F-D68A14A5C51409351infoc; "
+           'referer': 'https://space.bilibili.com/14583962/',
+           'Cookie': "_uuid=21EB14CF-CBA0-6FDC-821F-D68A14A5C51409351infoc; "
                      "buvid3=04D4D127-D90F-4AE0-9D9B-DC8F95DD365918550infoc; "
                      "CURRENT_FNVAL=80; blackside_state=1; rpdid=|(k|Jkm|)R|l0J'uYu~Jm)~J); "
                      "fingerprint=760a6edb8fa7f49e216ee581b4c60ece; "
@@ -17,32 +17,35 @@ cookie = {'Cookie' : "_uuid=21EB14CF-CBA0-6FDC-821F-D68A14A5C51409351infoc; "
                      "SESSDATA=6ed6c81c%2C1632952648%2C72649%2A41; "
                      "bili_jct=e745c5f985c8e918670d7090d9443ae0; "
                      "DedeUserID=19667955; DedeUserID__ckMd5=00a94d7f3200fdb4; sid=9b4dr68a; bsource=search_google; "
-                     "PVID=1; bfe_id=6f285c892d9d3c1f8f020adad8bed553"}
+                     "PVID=1; bfe_id=6f285c892d9d3c1f8f020adad8bed553"
+           }
 
 def getFollowersByID(userID): # return numFollowings and numFollowers
     url = f'https://api.bilibili.com/x/relation/stat?vmid={userID}&jsonp=jsonp'
+    r = ''
     try:
-        r = requests.session().get(url, headers=headers, cookies = cookie, timeout=1.5)
+        r = requests.session().get(url, headers=headers, timeout=1.5)
         json = r.json()
         if not json['data']:
             print('Banned at {}'.format(url))
         numFollowings, numFollowers = json['data']['following'], json['data']['follower']
         return numFollowings, numFollowers
     except:
-        print("Sorry, due to some reason, you failed to visit the page.\n{}".format(url))
+        print("Sorry, due to some reason, you failed to visit the page.\n{}".format(url), '\n',r.text)
         return 0,0
 
 def getLikesByID(userID): # return numLikes and numViews
     url = f'https://api.bilibili.com/x/space/upstat?mid={userID}&jsonp=jsonp'
+    r = ''
     try:
-        r = requests.session().get(url, headers=headers, cookies = cookie, timeout=1.5)
+        r = requests.session().get(url, headers=headers, timeout=1.5)
         json = r.json()
         if not json['data']:
             print('Banned at {}'.format(url))
         numLikes, numViews = json['data']['likes'], json['data']['archive']['view']
         return numLikes, numViews
     except:
-        print("Sorry, due to some reason, you failed to visit the page.\n{}".format(url))
+        print("Sorry, due to some reason, you failed to visit the page.\n{}".format(url), '\n', r.text)
         return 0, 0
 
 
@@ -85,24 +88,25 @@ def refreshPossibleTopUp():
 # Add UPs whose followers exceeds FAN_LIMIT to the table PossibleTopUp
 FAN_LIMIT=1000000
 def crawlUpFollowing():
-    cookies={'Cookie' : "_uuid=21EB14CF-CBA0-6FDC-821F-D68A14A5C51409351infoc; "
-                          "buvid3=04D4D127-D90F-4AE0-9D9B-DC8F95DD365918550infoc; "
-                          "CURRENT_FNVAL=80; blackside_state=1; "
-                          "rpdid=|(k|Jkm|)R|l0J'uYu~Jm)~J); "
-                          "fingerprint=760a6edb8fa7f49e216ee581b4c60ece; "
-                          "buvid_fp=04D4D127-D90F-4AE0-9D9B-DC8F95DD365918550infoc; "
-                          "buvid_fp_plain=04D4D127-D90F-4AE0-9D9B-DC8F95DD365918550infoc; "
-                          "SESSDATA=6ed6c81c,1632952648,72649*41; "
-                          "bili_jct=e745c5f985c8e918670d7090d9443ae0; "
-                          "DedeUserID=19667955; "
-                          "DedeUserID__ckMd5=00a94d7f3200fdb4; "
-                          "sid=9b4dr68a; bsource=search_google; "
-                          "PVID=3; "
-                          "bfe_id=603589b7ce5e180726bfa88808aa8947"}
-    headers = {'referer':'https://space.bilibili.com/399966183/fans/follow',
+    headers = {'referer':'',
                'user-agent':'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) '
                             'AppleWebKit/537.36 (KHTML, like Gecko) '
-                            'Chrome/89.0.4389.114 Safari/537.36'}
+                            'Chrome/89.0.4389.114 Safari/537.36',
+               'cookie': "_uuid=21EB14CF-CBA0-6FDC-821F-D68A14A5C51409351infoc; "
+                         "buvid3=04D4D127-D90F-4AE0-9D9B-DC8F95DD365918550infoc; "
+                         "CURRENT_FNVAL=80; blackside_state=1; "
+                         "rpdid=|(k|Jkm|)R|l0J'uYu~Jm)~J); "
+                         "fingerprint=760a6edb8fa7f49e216ee581b4c60ece; "
+                         "buvid_fp=04D4D127-D90F-4AE0-9D9B-DC8F95DD365918550infoc; "
+                         "buvid_fp_plain=04D4D127-D90F-4AE0-9D9B-DC8F95DD365918550infoc; "
+                         "SESSDATA=6ed6c81c,1632952648,72649*41; "
+                         "bili_jct=e745c5f985c8e918670d7090d9443ae0; "
+                         "DedeUserID=19667955; "
+                         "DedeUserID__ckMd5=00a94d7f3200fdb4; "
+                         "sid=9b4dr68a; bsource=search_google; "
+                         "PVID=3; "
+                         "bfe_id=603589b7ce5e180726bfa88808aa8947"
+               }
     missed = []
     mysqlconnect=MysqlConnect()
     mysqlconnect.getConnect()
@@ -110,15 +114,18 @@ def crawlUpFollowing():
     upList = [item for (item,) in mysqlconnect.queryOutCome(sql)]
     random.shuffle(upList)
     for up in upList:
+        headers['referer']='https://space.bilibili.com/{}/fans/follow'.format(up)
+        url = f'https://api.bilibili.com/x/relation/followings?vmid={up}&'
         for i in range(1,6):
-            url = f'https://api.bilibili.com/x/relation/followings?vmid={up}&pn={i}&ps=20&order=desc&jsonp=jsonp'
-            #print(url)
-            _json = requests.session().get(url, headers=headers, cookies=cookies, timeout=1.5).json()
+            url += f'pn={i}&ps=20&order=desc&jsonp=jsonp'
+            print(url)
+            r = requests.session().get(url, headers=headers, timeout=1.5)
+            _json = r.json()
             if _json['message']=="用户已设置隐私，无法查看" :
                 print('用户{}已设置隐私，无法查看'.format(up))
                 break
             elif not _json['data']:
-                print('Failed of visiting page at {}'.format(url))
+                print('Failed of visiting page at {}'.format(url),'\n',r.text)
                 break
             elif not _json['data']['list']:
                 print('Empty Page {}'.format(url))
@@ -133,7 +140,7 @@ def crawlUpFollowing():
                 if(numFollowers==numFollowings==0): # Failed to visit the F&F page
                     missed.append(mid)
                     continue
-                time.sleep(random.random()*5)
+                time.sleep(random.random()*2)
                 if numFollowers>=FAN_LIMIT:
                     numLikes, numViews = getLikesByID(mid)
                     if(numLikes==numViews==0): # Failed to visit the L&V poge
@@ -142,10 +149,10 @@ def crawlUpFollowing():
                     sql = '''INSERT IGNORE INTO `PossibleTopUp` 
                     VALUES ({}, {}, {}, {}, {});'''.format(mid, numFollowings, numFollowers, numLikes, numViews)
                     mysqlconnect.queryOutCome(sql)
-                time.sleep(random.random()*5)
-            time.sleep(random.random()*6)
+                time.sleep(random.random()*3)
+            time.sleep(random.random()*5)
         print('Finish Up {}'.format(up))
-        time.sleep(random.random()*7)
+        time.sleep(random.random()*5)
     print('Failed to crawl these Ups:', missed)
 
 def updateTop100():
@@ -200,4 +207,3 @@ if __name__ == "__main__":
         #mysqlconnect.queryOutCome(sql)
         updateUpByDate(up, str(datetime.now().date()))
     '''
-

@@ -52,6 +52,7 @@ class Video:
     def segment_danmuku(self):
         # get rid of digits, spaces, invalid words
         danmuku = self.collect_danmuku()
+        print('# OF Danmuku:', len(danmuku))
         segment_words = []
         for danmu in danmuku:
             try:
@@ -136,8 +137,6 @@ class Video:
         return aim_oid
 
     def comments_parse(self):
-
-
         oid = self.get_oid(f'https://www.bilibili.com/video/{self.bvid}')
         n = 1
         headers={'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
@@ -149,6 +148,7 @@ class Video:
                 url = f'https://api.bilibili.com/x/v2/reply?jsonp=jsonp&pn={n}&type=1&oid={oid}&sort=2'
                 print(url)
                 r = requests.get(url.format(n), headers=headers)
+                print(r.text)
                 _json = json.loads(r.text)
                 n += 1
                 for replie in _json['data']['replies']:
@@ -178,7 +178,7 @@ class Video:
 
 if __name__ == "__main__":
     v = Video()
-    v.bvid = 'BV15y4y177aj'
+    v.bvid = 'BV1QB4y1P7j9'
     #v.generate_wordscloud_1()
     #v.generate_wordscloud_2()
     v.comments_parse().to_csv('comments.csv')
