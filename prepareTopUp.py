@@ -193,6 +193,7 @@ if __name__ == "__main__":
     #updateTop100()
 
     # --------- Call below every day ----------------------
+    # 第一步和第二步之间最好歇久一点 15min+？
     # 1. Refresh PossibleTopUp
     #refreshPossibleTopUp()
     # 2. Crawl NewestTop100's following, add newly added one into PossibleTopUP
