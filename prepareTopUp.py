@@ -88,7 +88,7 @@ def refreshPossibleTopUp():
 
 
 # Add UPs whose followers exceeds FAN_LIMIT to the table PossibleTopUp
-FAN_LIMIT=1000000
+FAN_LIMIT=1500000
 def crawlUpFollowing():
     headers = {'referer':'',
                'user-agent':'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) '
@@ -112,7 +112,7 @@ def crawlUpFollowing():
     missed = []
     mysqlconnect=MysqlConnect()
     mysqlconnect.getConnect()
-    sql = "SELECT `ID` FROM `PossibleTopUp`"
+    sql = "SELECT `ID` FROM `NewestTop100`"
     upList = [item for (item,) in mysqlconnect.queryOutCome(sql)]
     random.shuffle(upList)
     for up in upList:
@@ -121,7 +121,7 @@ def crawlUpFollowing():
         for i in range(1,6):
             url += f'pn={i}&ps=20&order=desc&jsonp=jsonp'
             print(url)
-            r = requests.session().get(url, headers=headers, timeout=1.5)
+            r = requests.session().get(url, headers=headers, timeout=5)
             _json = r.json()
             if _json['message']=="用户已设置隐私，无法查看" :
                 print('用户{}已设置隐私，无法查看'.format(up))
@@ -163,6 +163,7 @@ def updateTop100():
     mysqlconnect.createTable2()
     sql = "SELECT `ID` from `PossibleTopUp` ORDER BY `Followers` DESC;"
     upList = [item for (item,) in mysqlconnect.queryOutCome(sql)[:100]]
+    print(upList)
     for id in upList:
         sql = mysqlconnect.getInsertToTable2Sql('NewestTop100', id)
         mysqlconnect.insertInfo(sql)
@@ -189,19 +190,20 @@ def updateUpByDate(upID, date):
 
 if __name__ == "__main__":
     #initialTop100('https://www.bilibili.com/read/cv10601513')
+    #updateTop100()
 
     # --------- Call below every day ----------------------
     # 1. Refresh PossibleTopUp
     #refreshPossibleTopUp()
     # 2. Crawl NewestTop100's following, add newly added one into PossibleTopUP
     crawlUpFollowing()
-    # 3. Update Top100
+    # 3. Update Top100 according to newst possibleTopUp
     #updateTop100()
     # 4. Collect today's date's data for every top100 Up
     '''
     mysqlconnect = MysqlConnect()
     mysqlconnect.getConnect()
-    sql = "SELECT `ID` from `NewestTop100`;"
+    sql = "SELECT `ID` from `PossibleTopUp`;"
     upList = [up for (up,) in mysqlconnect.queryOutCome(sql)]
     #print(upList)
     for up in upList:
