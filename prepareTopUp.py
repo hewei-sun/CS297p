@@ -151,7 +151,7 @@ def crawlUpFollowing():
                     sql = '''INSERT IGNORE INTO `PossibleTopUp` 
                     VALUES ({}, {}, {}, {}, {});'''.format(mid, numFollowings, numFollowers, numLikes, numViews)
                     mysqlconnect.queryOutCome(sql)
-                time.sleep(random.random()*3)
+                #time.sleep(random.random()*3)
             time.sleep(random.random()*5)
         print('Finish Up {}'.format(up))
         time.sleep(random.random()*5)
