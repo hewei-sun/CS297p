@@ -74,6 +74,7 @@ def initialTop100(url): # Only called at Day 1
 
 # Refresh Up's 4 data in possibleTopUp
 def refreshPossibleTopUp():
+    missed = []
     mysqlconnect = MysqlConnect()
     mysqlconnect.getConnect()
     sql = "SELECT `ID` FROM `PossibleTopUp`"
@@ -82,9 +83,18 @@ def refreshPossibleTopUp():
     random.shuffle(upList)
     for upID in upList:
         numFollowings, numFollowers = getFollowersByID(upID)
+        if numFollowings==numFollowers==0:
+            print("Failed crawling data for up ",upID)
+            missed.append(upID)
+            break
         numLikes, numViews = getLikesByID(upID)
+        if numLikes==numViews==0:
+            print("Failed crawling data for up ", upID)
+            missed.append(upID)
+            break
         sql = mysqlconnect.getInsertToTable1Sql('PossibleTopUp', upID, numFollowings, numFollowers, numLikes, numViews)
         mysqlconnect.insertInfo(sql)
+    return missed
 
 
 # Add UPs whose followers exceeds FAN_LIMIT to the table PossibleTopUp
@@ -151,7 +161,7 @@ def crawlUpFollowing():
                     sql = '''INSERT IGNORE INTO `PossibleTopUp` 
                     VALUES ({}, {}, {}, {}, {});'''.format(mid, numFollowings, numFollowers, numLikes, numViews)
                     mysqlconnect.queryOutCome(sql)
-                time.sleep(random.random()*3)
+                #time.sleep(random.random()*3)
             time.sleep(random.random()*5)
         print('Finish Up {}'.format(up))
         time.sleep(random.random()*5)
@@ -194,8 +204,9 @@ if __name__ == "__main__":
 
     # --------- Call below every day ----------------------
     # 1. Refresh PossibleTopUp
-    #refreshPossibleTopUp()
-    #time.sleep(600) # stop for 10 min
+    refreshPossibleTopUp()
+    print('hello')
+    time.sleep(600) # stop for 10 min
     # 2. Crawl NewestTop100's following, add newly added one into PossibleTopUP
     crawlUpFollowing()
     # 3. Update Top100 according to newst possibleTopUp
