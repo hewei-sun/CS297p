@@ -117,9 +117,9 @@ def crawlUpFollowing():
     random.shuffle(upList)
     for up in upList:
         headers['referer']='https://space.bilibili.com/{}/fans/follow'.format(up)
-        url = f'https://api.bilibili.com/x/relation/followings?vmid={up}&'
+        url_head = f'https://api.bilibili.com/x/relation/followings?vmid={up}&'
         for i in range(1,6):
-            url += f'pn={i}&ps=20&order=desc&jsonp=jsonp'
+            url = url_head + f'pn={i}&ps=20&order=desc&jsonp=jsonp'
             print(url)
             r = requests.session().get(url, headers=headers, timeout=5)
             _json = r.json()
@@ -196,6 +196,7 @@ if __name__ == "__main__":
     # 第一步和第二步之间最好歇久一点 15min+？
     # 1. Refresh PossibleTopUp
     #refreshPossibleTopUp()
+    #time.sleep(600) # stop for 10 min
     # 2. Crawl NewestTop100's following, add newly added one into PossibleTopUP
     crawlUpFollowing()
     # 3. Update Top100 according to newst possibleTopUp
