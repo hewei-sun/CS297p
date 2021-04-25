@@ -5,6 +5,7 @@ from MysqlConnect import MysqlConnect
 from Spider import Spider
 from selenium import webdriver
 
+
 user_agents=['Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36']
 headers = {'user-agent': random.choice(user_agents),
            'referer': 'https://space.bilibili.com/14583962/',
@@ -19,6 +20,23 @@ headers = {'user-agent': random.choice(user_agents),
                      "DedeUserID=19667955; DedeUserID__ckMd5=00a94d7f3200fdb4; sid=9b4dr68a; bsource=search_google; "
                      "PVID=1; bfe_id=6f285c892d9d3c1f8f020adad8bed553"
            }
+'''
+user_agents=['Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.72 Safari/537.36 Edg/90.0.818.42']
+headers = {'user-agent': random.choice(user_agents),
+           'referer': 'https://space.bilibili.com/562197/',
+           'Cookie': "_uuid=EF2DAAED-E1B0-1B62-AC90-95FFE33A56CB71197infoc;" 
+                     "buvid3=1FE86BE0-86E5-4443-9EAA-B4692C34CAB24610infoc; "
+                     "CURRENT_FNVAL=80;blackside_state=1;  rpdid=|(JY~|J)J|RY0J'ullYuuJmRR; "
+                     "fingerprint=45bff20986aa4242239b29ed097fc9e9; "
+                     "buvid_fp=1FE86BE0-86E5-4443-9EAA-B4692C34CAB24610infoc; "
+                     "buvid_fp_plain=538F6B2F-C709-4EA9-B284-ACD021EF94AB18531infoc; "
+                     "SESSDATA=9c02010b%2C1628737703%2Cdfaa0%2A21; "
+                     "bili_jct=21e92ad75ec8725e7d1cde39f76d728e; "                     
+                     "DedeUserID=7255947;DedeUserID__ckMd5=2e697f52386d43f6; sid=br04i46m;bsource=search_baidu;"
+                     "PVID=4;bfe_id=1bad38f44e358ca77469025e0405c4a6;"
+                       "LIVE_BUVID__ckMd5=97f1fede58a29dba; LIVE_BUVID=51c5671403d1ff3a3002f405d313a243; CURRENT_QUALITY=80; fts=1531899601; bp_video_offset_7255947=514515577167187812;  bp_t_offset_7255947=516890779977759482; _dfcaptcha=4fb88d1f4ecd6be8df48601b45a633c6"
+           }
+'''
 
 def getFollowersByID(userID): # return numFollowings and numFollowers
     url = f'https://api.bilibili.com/x/relation/stat?vmid={userID}&jsonp=jsonp'
@@ -100,6 +118,7 @@ def refreshPossibleTopUp():
 # Add UPs whose followers exceeds FAN_LIMIT to the table PossibleTopUp
 FAN_LIMIT=1500000
 def crawlUpFollowing():
+    
     headers = {'referer':'',
                'user-agent':'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) '
                             'AppleWebKit/537.36 (KHTML, like Gecko) '
@@ -119,6 +138,28 @@ def crawlUpFollowing():
                          "PVID=3; "
                          "bfe_id=603589b7ce5e180726bfa88808aa8947"
                }
+    '''
+    headers = {'referer':'',
+               'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
+                            'AppleWebKit/537.36 (KHTML, like Gecko)'
+                            'Chrome/90.0.4430.72 Safari/537.36 Edg/90.0.818.42',
+               'cookie': "_uuid=EF2DAAED-E1B0-1B62-AC90-95FFE33A56CB71197infoc;" 
+                         "buvid3=1FE86BE0-86E5-4443-9EAA-B4692C34CAB24610infoc;"
+                         "CURRENT_FNVAL=80;blackside_state=1;"
+                         "rpdid=|(JY~|J)J|RY0J'ullYuuJmRR;"
+                         "fingerprint=45bff20986aa4242239b29ed097fc9e9;"
+                         "buvid_fp=1FE86BE0-86E5-4443-9EAA-B4692C34CAB24610infoc;"
+                         "buvid_fp_plain=538F6B2F-C709-4EA9-B284-ACD021EF94AB18531infoc;"
+                         "SESSDATA=9c02010b%2C1628737703%2Cdfaa0%2A21;"
+                         "bili_jct=21e92ad75ec8725e7d1cde39f76d728e;"
+                         "DedeUserID=7255947; "
+                         "DedeUserID__ckMd5=2e697f52386d43f6;"
+                         "sid=br04i46m;bsource=search_baidu; "
+                         "PVID=4;"
+                         "bfe_id=cade757b9d3229a3973a5d4e9161f3bc;"
+                            "fts=1531899601; LIVE_BUVID__ckMd5=97f1fede58a29dba; LIVE_BUVID=51c5671403d1ff3a3002f405d313a243;CURRENT_QUALITY=80;    bp_video_offset_7255947=514515577167187812; bp_t_offset_7255947=516890779977759482; _dfcaptcha=4fb88d1f4ecd6be8df48601b45a633c6"
+               }
+    '''
     missed = []
     mysqlconnect=MysqlConnect()
     mysqlconnect.getConnect()
@@ -174,29 +215,45 @@ def updateTop100():
     sql = "SELECT `ID` from `PossibleTopUp` ORDER BY `Followers` DESC;"
     upList = [item for (item,) in mysqlconnect.queryOutCome(sql)[:100]]
     print(upList)
+    rank = 1
     for id in upList:
-        sql = mysqlconnect.getInsertToTable2Sql('NewestTop100', id)
+        sql = mysqlconnect.getInsertToTable2Sql('NewestTop100', id, rank)
         mysqlconnect.insertInfo(sql)
+        rank += 1
 
 def updateUpByDate(upID, date):
     mysqlconnect = MysqlConnect()
     mysqlconnect.getConnect()
     sql = '''CREATE TABLE IF NOT EXISTS `{}`
                         (
-                            `Date` VARCHAR(60) UNIQUE,
+                            `Date` DATETIME UNIQUE,
                             `Followings` INT, 
                             `Followers` BIGINT,
                             `Likes` BIGINT,
                             `Views` BIGINT,
+                            `Rank` INT,
                              PRIMARY KEY(Date)
                         )ENGINE=innodb DEFAULT CHARSET=utf8;'''.format('Up'+str(upID))
     mysqlconnect.queryOutCome(sql)
     sql = '''SELECT `Followings`, `Followers`, `Likes`, `Views` FROM `PossibleTopUp` WHERE `ID`={};'''.format(upID)
     (numFollowings, numFollowers, numLikes, numViews) = mysqlconnect.queryOutCome(sql)[0]
-    sql = '''INSERT IGNORE INTO `{}` VALUES ('{}', {}, {}, {}, {});'''.format('Up'+str(upID), date, numFollowings, numFollowers, numLikes, numViews)
+    sql2 = '''SELECT COUNT(`Rank`) FROM `NewestTop100` WHERE `ID` = {};'''.format(upID)
+    (rank) = mysqlconnect.queryOutCome(sql2)[0][0]
+    if rank != 0:
+        sql2 = '''SELECT `Rank` FROM `NewestTop100` WHERE `ID` = {};'''.format(upID)
+        (rank) = mysqlconnect.queryOutCome(sql2)[0][0]
+    sql = '''INSERT IGNORE INTO `{}` VALUES ('{}', {}, {}, {}, {},{});'''.format('Up'+str(upID), date, numFollowings, numFollowers, numLikes, numViews, rank)
     print(sql)
     mysqlconnect.queryOutCome(sql)
 
+def dropAll():
+    mysqlconnect = MysqlConnect()
+    mysqlconnect.getConnect()
+    sql = "SELECT `ID` from `PossibleTopUp`;"
+    upList = [up for (up,) in mysqlconnect.queryOutCome(sql)]
+    for up in upList:
+        sql = '''DROP TABLE {};'''.format('Up'+str(up))
+        mysqlconnect.queryOutCome(sql)
 
 if __name__ == "__main__":
     #initialTop100('https://www.bilibili.com/read/cv10601513')
@@ -210,9 +267,9 @@ if __name__ == "__main__":
     # 2. Crawl NewestTop100's following, add newly added one into PossibleTopUP
     crawlUpFollowing()
     # 3. Update Top100 according to newst possibleTopUp
-    #updateTop100()
+    updateTop100()
     # 4. Collect today's date's data for every top100 Up
-    '''
+    
     mysqlconnect = MysqlConnect()
     mysqlconnect.getConnect()
     sql = "SELECT `ID` from `PossibleTopUp`;"
@@ -221,5 +278,6 @@ if __name__ == "__main__":
     for up in upList:
         #sql = "DROP TABLE IF EXISTS `UP{}`;".format(up)
         #mysqlconnect.queryOutCome(sql)
-        updateUpByDate(up, str(datetime.now().date()))
-    '''
+        #updateUpByDate(up, str(datetime.now().date()))
+        updateUpByDate(up, str(datetime.now()))
+    
