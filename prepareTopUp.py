@@ -1,10 +1,8 @@
 import requests
 import time, random
-from datetime import datetime
 from MysqlConnect import MysqlConnect
 from Spider import Spider
-from selenium import webdriver
-
+from videoRankings import getURLFormBilibili
 
 user_agents=['Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36']
 headers = {'user-agent': random.choice(user_agents),
@@ -50,7 +48,7 @@ def getFollowersByID(userID): # return numFollowings and numFollowers
         return numFollowings, numFollowers
     except:
         if r: print(r.text)
-        print("Sorry, due to some reason, you failed to visit the page.\n{}".format(url))
+        print("Sorry, due to some reason, you failed to visit the page.\t{}".format(url))
         return 0,0
 
 def getLikesByID(userID): # return numLikes and numViews
@@ -65,7 +63,7 @@ def getLikesByID(userID): # return numLikes and numViews
         return numLikes, numViews
     except:
         if r: print(r.text)
-        print("Sorry, due to some reason, you failed to visit the page.\n{}".format(url))
+        print("Sorry, due to some reason, you failed to visit the page.\t{}".format(url))
         return 0, 0
 
 
@@ -114,6 +112,84 @@ def refreshPossibleTopUp():
         mysqlconnect.insertInfo(sql)
     return missed
 
+def addOnePossibleUp(mid, numFollowings, numFollowers):
+    mysqlconnect = MysqlConnect()
+    mysqlconnect.getConnect()
+    numLikes, numViews = getLikesByID(mid)
+    if (numLikes == numViews == 0):  # Failed to visit the L&V poge
+        return mid
+    sql = mysqlconnect.getInsertToTable1Sql('PossibleTopUp', mid, numFollowings, numFollowers, numLikes, numViews)
+    mysqlconnect.queryOutCome(sql)
+    return None
+
+def addPossibleUpFromRanking():
+    urlDict = getURLFormBilibili()
+    mysqlconnect = MysqlConnect()
+    mysqlconnect.getConnect()
+    missed = []
+    for field, url in urlDict.items():
+        spider = Spider(url, headers)
+        spider.setSoup()
+        itemList = spider.findTagByAttrs('li', {'class': 'rank-item'})
+        for itm in itemList:
+            mid = itm.find('div', {'class': 'detail'}).find('a').get('href')[len('//space.bilibili.com/'):]
+            sql = 'SELECT 1 FROM `PossibleTopUp` WHERE `ID`={};'.format(mid)
+            if mysqlconnect.queryOutCome(sql):  # up existed
+                continue
+            numFollowings, numFollowers = getFollowersByID(mid)
+            if (numFollowers == numFollowings == 0):  # Failed to visit the F&F page
+                missed.append(mid)
+                continue
+            time.sleep(random.random() * 3)
+            if numFollowers >= FAN_LIMIT:
+                print("catched one:", mid,numFollowers)
+                addOnePossibleUp(mid, numFollowings, numFollowers)
+            time.sleep(random.random() * 5)
+    return missed
+
+def getFollowingsByID(up, headers, url_head, direction, n):
+    mysqlconnect = MysqlConnect()
+    mysqlconnect.getConnect()
+    missed = []
+    crawled=0
+    for i in range(1, 6):
+        url = url_head + f'pn={i}&ps=50&order={direction}&jsonp=jsonp'
+        print(url)
+        r = requests.session().get(url, headers=headers, timeout=5)
+        _json = r.json()
+        if _json['message'] == "用户已设置隐私，无法查看":
+            print('用户{}已设置隐私，无法查看'.format(up))
+            break
+        elif not _json['data']:
+            print('Failed of visiting page at {}'.format(url), '\n', r.text)
+            break
+        elif not _json['data']['list']:
+            print('Empty Page {}'.format(url))
+            break
+        for item in _json.get('data').get('list'):
+            mid = item['mid']
+            sql = 'SELECT 1 FROM `PossibleTopUp` WHERE `ID`={};'.format(mid)
+            if mysqlconnect.queryOutCome(sql):  # up existed
+                continue
+            numFollowings, numFollowers = getFollowersByID(mid)
+            if (numFollowers == numFollowings == 0):  # Failed to visit the F&F page
+                missed.append(mid)
+                continue
+            time.sleep(random.random() * 3)
+            if numFollowers >= FAN_LIMIT:
+                ret = addOnePossibleUp(mid, numFollowings, numFollowers)
+                if ret: missed.append(ret)
+            crawled += 1
+            if crawled==n:
+                #print('you crawled',crawled,'ups.')
+                break
+            time.sleep(random.random()*3)
+        else:
+            time.sleep(random.random() * 5)
+            continue
+        break
+    return missed
+
 
 # Add UPs whose followers exceeds FAN_LIMIT to the table PossibleTopUp
 FAN_LIMIT=1500000
@@ -157,67 +233,37 @@ def crawlUpFollowing():
                          "sid=br04i46m;bsource=search_baidu; "
                          "PVID=4;"
                          "bfe_id=cade757b9d3229a3973a5d4e9161f3bc;"
-                            "fts=1531899601; LIVE_BUVID__ckMd5=97f1fede58a29dba; LIVE_BUVID=51c5671403d1ff3a3002f405d313a243;CURRENT_QUALITY=80;    bp_video_offset_7255947=514515577167187812; bp_t_offset_7255947=516890779977759482; _dfcaptcha=4fb88d1f4ecd6be8df48601b45a633c6"
+                         "fts=1531899601; LIVE_BUVID__ckMd5=97f1fede58a29dba; LIVE_BUVID=51c5671403d1ff3a3002f405d313a243;CURRENT_QUALITY=80;    bp_video_offset_7255947=514515577167187812; bp_t_offset_7255947=516890779977759482; _dfcaptcha=4fb88d1f4ecd6be8df48601b45a633c6"
                }
     '''
     missed = []
     mysqlconnect=MysqlConnect()
     mysqlconnect.getConnect()
-    sql = "SELECT `ID` FROM `NewestTop100`"
-    upList = [item for (item,) in mysqlconnect.queryOutCome(sql)]
+    sql = "SELECT `ID`, `Followings` FROM `NewestTop100`"
+    upList = [(up, numFollowings) for (up,numFollowings,) in mysqlconnect.queryOutCome(sql)]
     random.shuffle(upList)
-    for up in upList:
+    for up, numFollowings in upList:
+    #for up, numFollowings in [(946974,352)]:
         headers['referer']='https://space.bilibili.com/{}/fans/follow'.format(up)
         url_head = f'https://api.bilibili.com/x/relation/followings?vmid={up}&'
-        for i in range(1,6):
-            url = url_head + f'pn={i}&ps=20&order=desc&jsonp=jsonp'
-            print(url)
-            r = requests.session().get(url, headers=headers, timeout=5)
-            _json = r.json()
-            if _json['message']=="用户已设置隐私，无法查看" :
-                print('用户{}已设置隐私，无法查看'.format(up))
-                break
-            elif not _json['data']:
-                print('Failed of visiting page at {}'.format(url),'\n',r.text)
-                break
-            elif not _json['data']['list']:
-                print('Empty Page {}'.format(url))
-                break
-
-            for item in _json.get('data').get('list'):
-                mid = item['mid']
-                sql = 'SELECT 1 FROM `PossibleTopUp` WHERE `ID`={};'.format(mid)
-                if mysqlconnect.queryOutCome(sql): # up existed
-                    continue
-                numFollowings, numFollowers = getFollowersByID(mid)
-                if(numFollowers==numFollowings==0): # Failed to visit the F&F page
-                    missed.append(mid)
-                    continue
-                time.sleep(random.random()*2)
-                if numFollowers>=FAN_LIMIT:
-                    numLikes, numViews = getLikesByID(mid)
-                    if(numLikes==numViews==0): # Failed to visit the L&V poge
-                        missed.append(mid)
-                        continue
-                    sql = '''INSERT IGNORE INTO `PossibleTopUp` 
-                    VALUES ({}, {}, {}, {}, {});'''.format(mid, numFollowings, numFollowers, numLikes, numViews)
-                    mysqlconnect.queryOutCome(sql)
-                #time.sleep(random.random()*3)
-            time.sleep(random.random()*5)
-        print('Finish Up {}'.format(up))
-        time.sleep(random.random()*5)
+        missed += getFollowingsByID(up, headers, url_head, 'asc', min(250, numFollowings))
+        numFollowings -= 250
+        if numFollowings>0: # crawl from the reverse direction but only took first `remaining` ones
+            missed += getFollowingsByID(up, headers, url_head, 'desc', min(250,numFollowings))
+        print('finished up ', up)
     print('Failed to crawl these Ups:', missed)
+    return missed
 
 def updateTop100():
     mysqlconnect = MysqlConnect()
     mysqlconnect.getConnect()
     mysqlconnect.createTable2()
-    sql = "SELECT `ID` from `PossibleTopUp` ORDER BY `Followers` DESC;"
-    upList = [item for (item,) in mysqlconnect.queryOutCome(sql)[:100]]
+    sql = "SELECT `ID`, `Followings` from `PossibleTopUp` ORDER BY `Followers` DESC;"
+    upList = [(id, numFollowings) for (id, numFollowings,) in mysqlconnect.queryOutCome(sql)[:100]]
     print(upList)
     rank = 1
-    for id in upList:
-        sql = mysqlconnect.getInsertToTable2Sql('NewestTop100', id, rank)
+    for id,numFollowings in upList:
+        sql = mysqlconnect.getInsertToTable2Sql('NewestTop100', id, rank, numFollowings)
         mysqlconnect.insertInfo(sql)
         rank += 1
 
@@ -246,6 +292,7 @@ def updateUpByDate(upID, date):
     print(sql)
     mysqlconnect.queryOutCome(sql)
 
+# drop an Up's row
 def dropAll():
     mysqlconnect = MysqlConnect()
     mysqlconnect.getConnect()
@@ -261,23 +308,25 @@ if __name__ == "__main__":
 
     # --------- Call below every day ----------------------
     # 1. Refresh PossibleTopUp
-    refreshPossibleTopUp()
+    #refreshPossibleTopUp()
     print('hello')
-    time.sleep(600) # stop for 10 min
+    #time.sleep(600) # stop for 10 min
     # 2. Crawl NewestTop100's following, add newly added one into PossibleTopUP
+    #addPossibleUpFromRanking()
     crawlUpFollowing()
     # 3. Update Top100 according to newst possibleTopUp
-    updateTop100()
+    #updateTop100()
     # 4. Collect today's date's data for every top100 Up
-    
+    '''
     mysqlconnect = MysqlConnect()
     mysqlconnect.getConnect()
     sql = "SELECT `ID` from `PossibleTopUp`;"
     upList = [up for (up,) in mysqlconnect.queryOutCome(sql)]
     #print(upList)
+    
     for up in upList:
         #sql = "DROP TABLE IF EXISTS `UP{}`;".format(up)
         #mysqlconnect.queryOutCome(sql)
         #updateUpByDate(up, str(datetime.now().date()))
         updateUpByDate(up, str(datetime.now()))
-    
+    '''

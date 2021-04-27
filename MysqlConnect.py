@@ -8,8 +8,8 @@ class MysqlConnect:  # Connect to MySQL
     def getConnect(self):
         
         db = pymysql.connect(
-            host='localhost', user='root', passwd='TSxsy240319!', autocommit=True,
-            port=3306, db='BilibiliUp', charset='utf8'
+            host='39.108.63.191', user='root', passwd='Kswl2021', autocommit=True,
+            port=3306, db='test1', charset='utf8'
         )
         '''
         db = pymysql.connect(
@@ -42,6 +42,7 @@ class MysqlConnect:  # Connect to MySQL
                         (
                             `ID` INT UNIQUE,
                             `Rank` INT,
+                            `Followings` INT,
                              PRIMARY KEY(ID)
                         )ENGINE=innodb DEFAULT CHARSET=utf8;'''
         db = self.getConnect()
@@ -67,10 +68,10 @@ class MysqlConnect:  # Connect to MySQL
             '''.format(tableName, ID, numFollowings, numFollowers, nunmLikes, numViews)
         return sql
 
-    def getInsertToTable2Sql(self, tableName, ID, rank):
+    def getInsertToTable2Sql(self, tableName, ID, rank, numFollowings):
         sql = '''
-            INSERT INTO `{}` VALUES ({}, {});
-            '''.format(tableName, ID, rank)
+            INSERT INTO `{}` VALUES ({}, {}, {});
+            '''.format(tableName, ID, rank, numFollowings)
         return sql
 
     def queryOutCome(self, sql):
