@@ -3,6 +3,7 @@ import time, random
 from MysqlConnect import MysqlConnect
 from Spider import Spider
 from videoRankings import getURLFormBilibili
+from datetime import datetime
 
 user_agents=['Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36']
 headers = {'user-agent': random.choice(user_agents),
@@ -308,16 +309,18 @@ if __name__ == "__main__":
 
     # --------- Call below every day ----------------------
     # 1. Refresh PossibleTopUp
-    #refreshPossibleTopUp()
-    print('hello')
-    #time.sleep(600) # stop for 10 min
+    refreshPossibleTopUp()
+    print('Refreshed PossibledTopUp')
+    time.sleep(600) # stop for 10 min
     # 2. Crawl NewestTop100's following, add newly added one into PossibleTopUP
-    #addPossibleUpFromRanking()
+    addPossibleUpFromRanking()
+    print('Added PossibleTopUp from Hot Videos Rankings')
+    time.sleep(600) # stop for 10 min
     crawlUpFollowing()
+    print('Added PossibleTopUp from Following Lists')
     # 3. Update Top100 according to newst possibleTopUp
-    #updateTop100()
+    updateTop100()
     # 4. Collect today's date's data for every top100 Up
-    '''
     mysqlconnect = MysqlConnect()
     mysqlconnect.getConnect()
     sql = "SELECT `ID` from `PossibleTopUp`;"
@@ -329,4 +332,3 @@ if __name__ == "__main__":
         #mysqlconnect.queryOutCome(sql)
         #updateUpByDate(up, str(datetime.now().date()))
         updateUpByDate(up, str(datetime.now()))
-    '''
