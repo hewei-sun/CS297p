@@ -104,6 +104,7 @@ def refreshPossibleTopUp():
             print("Failed crawling data for up ",upID)
             missed.append(upID)
             continue
+        time.sleep(random.random() * 5)
         numLikes, numViews = getLikesByID(upID)
         if numLikes==numViews==0:
             print("Failed crawling data for up ", upID)
@@ -111,6 +112,7 @@ def refreshPossibleTopUp():
             continue
         sql = mysqlconnect.getInsertToTable1Sql('PossibleTopUp', upID, numFollowings, numFollowers, numLikes, numViews)
         mysqlconnect.insertInfo(sql)
+        time.sleep(random.random() * 10)
     return missed
 
 def addOnePossibleUp(mid, numFollowings, numFollowers):
@@ -141,11 +143,11 @@ def addPossibleUpFromRanking():
             if (numFollowers == numFollowings == 0):  # Failed to visit the F&F page
                 missed.append(mid)
                 continue
-            time.sleep(random.random() * 3)
+            time.sleep(random.random() * 5)
             if numFollowers >= FAN_LIMIT:
                 print("catched one:", mid,numFollowers)
                 addOnePossibleUp(mid, numFollowings, numFollowers)
-            time.sleep(random.random() * 5)
+            time.sleep(random.random() * 10)
     return missed
 
 def getFollowingsByID(up, headers, url_head, direction, n):
@@ -176,7 +178,7 @@ def getFollowingsByID(up, headers, url_head, direction, n):
             if (numFollowers == numFollowings == 0):  # Failed to visit the F&F page
                 missed.append(mid)
                 continue
-            time.sleep(random.random() * 3)
+            time.sleep(random.random() * 5)
             if numFollowers >= FAN_LIMIT:
                 ret = addOnePossibleUp(mid, numFollowings, numFollowers)
                 if ret: missed.append(ret)
@@ -184,9 +186,9 @@ def getFollowingsByID(up, headers, url_head, direction, n):
             if crawled==n:
                 #print('you crawled',crawled,'ups.')
                 break
-            time.sleep(random.random()*3)
+            time.sleep(random.random() * 10)
         else:
-            time.sleep(random.random() * 5)
+            time.sleep(random.random() * 10)
             continue
         break
     return missed
@@ -311,11 +313,11 @@ if __name__ == "__main__":
     # 1. Refresh PossibleTopUp
     refreshPossibleTopUp()
     print('Refreshed PossibledTopUp')
-    time.sleep(600) # stop for 10 min
+    time.sleep(1800) # stop for 10 min
     # 2. Crawl NewestTop100's following, add newly added one into PossibleTopUP
     addPossibleUpFromRanking()
     print('Added PossibleTopUp from Hot Videos Rankings')
-    time.sleep(600) # stop for 10 min
+    time.sleep(1800) # stop for 10 min
     crawlUpFollowing()
     print('Added PossibleTopUp from Following Lists')
     # 3. Update Top100 according to newst possibleTopUp
@@ -331,4 +333,5 @@ if __name__ == "__main__":
         #sql = "DROP TABLE IF EXISTS `UP{}`;".format(up)
         #mysqlconnect.queryOutCome(sql)
         #updateUpByDate(up, str(datetime.now().date()))
-        updateUpByDate(up, str(datetime.now()))
+        #updateUpByDate(up, str(datetime.now()))
+        updateUpByDate(up, "2021-04-27 14:34:34.315011")
