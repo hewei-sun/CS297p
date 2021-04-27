@@ -103,12 +103,12 @@ def refreshPossibleTopUp():
         if numFollowings==numFollowers==0:
             print("Failed crawling data for up ",upID)
             missed.append(upID)
-            break
+            continue
         numLikes, numViews = getLikesByID(upID)
         if numLikes==numViews==0:
             print("Failed crawling data for up ", upID)
             missed.append(upID)
-            break
+            continue
         sql = mysqlconnect.getInsertToTable1Sql('PossibleTopUp', upID, numFollowings, numFollowers, numLikes, numViews)
         mysqlconnect.insertInfo(sql)
     return missed
@@ -305,7 +305,7 @@ def dropAll():
 
 if __name__ == "__main__":
     #initialTop100('https://www.bilibili.com/read/cv10601513')
-    #updateTop100()
+    updateTop100()
 
     # --------- Call below every day ----------------------
     # 1. Refresh PossibleTopUp
