@@ -3,7 +3,7 @@ import time, random
 from MysqlConnect import MysqlConnect
 from Spider import Spider
 from videoRankings import getURLFormBilibili
-from datetime import datetime
+from datetime import datetime, timedelta
 
 user_agents=['Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36']
 headers = {'user-agent': random.choice(user_agents),
@@ -41,7 +41,7 @@ def getFollowersByID(userID): # return numFollowings and numFollowers
     url = f'https://api.bilibili.com/x/relation/stat?vmid={userID}&jsonp=jsonp'
     r = ''
     try:
-        r = requests.session().get(url, headers=headers, timeout=5)
+        r = requests.session().get(url, timeout=5)
         json = r.json()
         if not json['data']:
             print('Banned at {}'.format(url))
@@ -90,12 +90,13 @@ def initialTop100(url): # Only called at Day 1
 
 
 # Refresh Up's 4 data in possibleTopUp
-def refreshPossibleTopUp():
+def refreshPossibleTopUp(upList=None):
     missed = []
     mysqlconnect = MysqlConnect()
     mysqlconnect.getConnect()
-    sql = "SELECT `ID` FROM `PossibleTopUp`"
-    upList = [item for (item,) in mysqlconnect.queryOutCome(sql)]
+    if not upList:
+        sql = "SELECT `ID` FROM `PossibleTopUp`"
+        upList = [item for (item,) in mysqlconnect.queryOutCome(sql)]
     mysqlconnect.createTable1()  # deleted the old table, create a new one
     random.shuffle(upList)
     for upID in upList:
@@ -307,19 +308,20 @@ def dropAll():
 
 if __name__ == "__main__":
     #initialTop100('https://www.bilibili.com/read/cv10601513')
-    updateTop100()
-
+    #updateTop100()
+    '''
     # --------- Call below every day ----------------------
     # 1. Refresh PossibleTopUp
     refreshPossibleTopUp()
     print('Refreshed PossibledTopUp')
     time.sleep(1800) # stop for 10 min
-    # 2. Crawl NewestTop100's following, add newly added one into PossibleTopUP
+    # 2. Add new ones into PossibleTopUP via TOP100's following list and today's video ranking
     addPossibleUpFromRanking()
     print('Added PossibleTopUp from Hot Videos Rankings')
-    time.sleep(1800) # stop for 10 min
+    time.sleep(1800) # stop for 30 min
     crawlUpFollowing()
     print('Added PossibleTopUp from Following Lists')
+    '''
     # 3. Update Top100 according to newst possibleTopUp
     updateTop100()
     # 4. Collect today's date's data for every top100 Up
@@ -328,10 +330,18 @@ if __name__ == "__main__":
     sql = "SELECT `ID` from `PossibleTopUp`;"
     upList = [up for (up,) in mysqlconnect.queryOutCome(sql)]
     #print(upList)
-    
     for up in upList:
         #sql = "DROP TABLE IF EXISTS `UP{}`;".format(up)
         #mysqlconnect.queryOutCome(sql)
         #updateUpByDate(up, str(datetime.now().date()))
         #updateUpByDate(up, str(datetime.now()))
-        updateUpByDate(up, "2021-04-27 14:34:34.315011")
+        updateUpByDate(up, str(datetime.now() + timedelta(hours=15)))
+
+    '''
+    # If dropped the PossibleTopUp by accidently, use below code
+    mysqlconnect = MysqlConnect()
+    mysqlconnect.getConnect()
+    sql = 'SELECT table_name FROM information_schema.TABLES'
+    upList = [tb[2:] for (tb,) in mysqlconnect.queryOutCome(sql) if tb[0:2]=='Up']
+    refreshPossibleTopUp(upList)
+    '''
