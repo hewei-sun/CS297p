@@ -224,7 +224,7 @@ def crawlUpFollowing():
         if numFollowings>0: # crawl from the reverse direction but only took first `remaining` ones
             missed += getFollowingsByID(up, headers, url_head, 'desc', min(250,numFollowings))
         print('finished up ', up)
-    print('Failed to crawl these Ups:', missed)
+    #print('Failed to crawl these Ups:', missed)
     return missed
 
 def updateTop100():
@@ -286,15 +286,33 @@ if __name__ == "__main__":
     
     # --------- Call below every day ----------------------
     # 1. Refresh PossibleTopUp
-    #refreshPossibleTopUp()
+    '''
+    refreshUp = refreshPossibleTopUp()
+    if len(refreshUp) != 0:
+        with open("refreshMissed.txt", 'a+') as f:
+            for up in refreshUp:
+                f.write(str(up)+"\n")
+    '''
     print('Refreshed PossibledTopUp')
     #time.sleep(1800) # stop for 10 min
     
     # 2. Add new ones into PossibleTopUP via TOP100's following list and today's video ranking
-    addPossibleUpFromRanking()
+    '''
+    rankUp = addPossibleUpFromRanking()
+    if len(rankUp) != 0:
+        with open("rankMissed.txt", 'a+') as f:
+            for up in rankUp:
+                f.write(str(up)+"\n")
+    '''
     print('Added PossibleTopUp from Hot Videos Rankings')
-    #time.sleep(1800) # stop for 30 min
-    #crawlUpFollowing()
+    '''
+    time.sleep(1800) # stop for 30 min
+    crawlUp = crawlUpFollowing()
+    if len(crawlUp) != 0:
+        with open("crawlMissed.txt", 'a+') as f:
+            for up in crawlUp:
+                f.write(str(up)+"\n")
+    '''
     print('Added PossibleTopUp from Following Lists')
     # 3. Update Top100 according to newst possibleTopUp
     '''
