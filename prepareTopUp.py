@@ -323,9 +323,6 @@ if __name__ == "__main__":
     upList = [up for (up,) in mysqlconnect.queryOutCome(sql)]
     #print(upList)
     for up in upList:
-        #sql = "DROP TABLE IF EXISTS `UP{}`;".format(up)
-        #mysqlconnect.queryOutCome(sql)
-        #updateUpByDate(up, str(datetime.now().date()))
         updateUpByDate(up, str(datetime.now()))
         #updateUpByDate(up, str(datetime.now() + timedelta(hours=15)))
     '''
