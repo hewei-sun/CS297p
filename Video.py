@@ -1,5 +1,4 @@
 import requests
-from bokeh.io import webdriver
 from bs4 import BeautifulSoup
 import re
 import jieba

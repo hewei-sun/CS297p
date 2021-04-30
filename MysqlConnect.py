@@ -6,7 +6,7 @@ class MysqlConnect:  # Connect to MySQL
         pass
 
     def getConnect(self):
-        
+        '''
         db = pymysql.connect(
             host='39.108.63.191', user='root', passwd='Kswl2021', autocommit=True,
             port=3306, db='test1', charset='utf8'
@@ -16,7 +16,7 @@ class MysqlConnect:  # Connect to MySQL
             host='39.108.63.191', user='root', passwd='Kswl2021', autocommit=True,
             port=3306, db='bilibili', charset='utf8'
         )
-        '''
+        
         return db
 
     def createTable1(self):
