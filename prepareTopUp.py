@@ -93,7 +93,6 @@ def initialTop100(url): # Only called at Day 1
 def refreshPossibleTopUp(upList=None):
     missed = []
     mysqlconnect = MysqlConnect()
-    mysqlconnect.getConnect()
     if not upList:
         sql = "SELECT `ID` FROM `PossibleTopUp`"
         upList = [item for (item,) in mysqlconnect.queryOutCome(sql)]
@@ -118,18 +117,16 @@ def refreshPossibleTopUp(upList=None):
 
 def addOnePossibleUp(mid, numFollowings, numFollowers):
     mysqlconnect = MysqlConnect()
-    mysqlconnect.getConnect()
     numLikes, numViews = getLikesByID(mid)
     if (numLikes == numViews == 0):  # Failed to visit the L&V poge
         return mid
     sql = mysqlconnect.getInsertToTable1Sql('PossibleTopUp', mid, numFollowings, numFollowers, numLikes, numViews)
-    mysqlconnect.queryOutCome(sql)
+    mysqlconnect.insertInfo(sql)
     return None
 
 def addPossibleUpFromRanking():
     urlDict = getURLFormBilibili()
     mysqlconnect = MysqlConnect()
-    mysqlconnect.getConnect()
     missed = []
     for field, url in urlDict.items():
         spider = Spider(url, headers)
@@ -147,13 +144,13 @@ def addPossibleUpFromRanking():
             time.sleep(random.random() * 5)
             if numFollowers >= FAN_LIMIT:
                 print("catched one:", mid,numFollowers)
-                addOnePossibleUp(mid, numFollowings, numFollowers)
+                ret = addOnePossibleUp(mid, numFollowings, numFollowers)
+                if ret: missed.append(ret)
             time.sleep(random.random() * 10)
     return missed
 
 def getFollowingsByID(up, headers, url_head, direction, n):
     mysqlconnect = MysqlConnect()
-    mysqlconnect.getConnect()
     missed = []
     crawled=0
     for i in range(1, 6):
@@ -242,7 +239,6 @@ def crawlUpFollowing():
     '''
     missed = []
     mysqlconnect=MysqlConnect()
-    mysqlconnect.getConnect()
     sql = "SELECT `ID`, `Followings` FROM `NewestTop100`"
     upList = [(up, numFollowings) for (up,numFollowings,) in mysqlconnect.queryOutCome(sql)]
     random.shuffle(upList)
@@ -260,7 +256,6 @@ def crawlUpFollowing():
 
 def updateTop100():
     mysqlconnect = MysqlConnect()
-    mysqlconnect.getConnect()
     mysqlconnect.createTable2()
     sql = "SELECT `ID`, `Followings` from `PossibleTopUp` ORDER BY `Followers` DESC;"
     upList = [(id, numFollowings) for (id, numFollowings,) in mysqlconnect.queryOutCome(sql)[:100]]
@@ -273,7 +268,6 @@ def updateTop100():
 
 def updateUpByDate(upID, date):
     mysqlconnect = MysqlConnect()
-    mysqlconnect.getConnect()
     sql = '''CREATE TABLE IF NOT EXISTS `{}`
                         (
                             `Date` DATETIME UNIQUE,
@@ -299,7 +293,6 @@ def updateUpByDate(upID, date):
 # drop an Up's row
 def dropAll():
     mysqlconnect = MysqlConnect()
-    mysqlconnect.getConnect()
     sql = "SELECT `ID` from `PossibleTopUp`;"
     upList = [up for (up,) in mysqlconnect.queryOutCome(sql)]
     for up in upList:
@@ -315,18 +308,17 @@ if __name__ == "__main__":
     refreshPossibleTopUp()
     print('Refreshed PossibledTopUp')
     time.sleep(1800) # stop for 10 min
+    '''
     # 2. Add new ones into PossibleTopUP via TOP100's following list and today's video ranking
     addPossibleUpFromRanking()
     print('Added PossibleTopUp from Hot Videos Rankings')
     time.sleep(1800) # stop for 30 min
     crawlUpFollowing()
     print('Added PossibleTopUp from Following Lists')
-    '''
     # 3. Update Top100 according to newst possibleTopUp
     updateTop100()
     # 4. Collect today's date's data for every top100 Up
     mysqlconnect = MysqlConnect()
-    mysqlconnect.getConnect()
     sql = "SELECT `ID` from `PossibleTopUp`;"
     upList = [up for (up,) in mysqlconnect.queryOutCome(sql)]
     #print(upList)
@@ -340,7 +332,6 @@ if __name__ == "__main__":
     '''
     # If dropped the PossibleTopUp by accidently, use below code
     mysqlconnect = MysqlConnect()
-    mysqlconnect.getConnect()
     sql = 'SELECT table_name FROM information_schema.TABLES'
     upList = [tb[2:] for (tb,) in mysqlconnect.queryOutCome(sql) if tb[0:2]=='Up']
     refreshPossibleTopUp(upList)
