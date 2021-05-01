@@ -61,6 +61,9 @@ class MysqlConnect:  # Connect to MySQL
         except:
             print("failed...")
             db.rollback()
+        finally:
+            # Shutdown connect
+            db.close()
 
     def getInsertToTable1Sql(self, tableName, ID, numFollowings, numFollowers, nunmLikes, numViews):
         sql = '''
