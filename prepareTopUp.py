@@ -4,6 +4,7 @@ from MysqlConnect import MysqlConnect
 from Spider import Spider
 from videoRankings import getURLFormBilibili
 from datetime import datetime, timedelta
+from math import ceil
 
 user_agents=['Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36']
 headers = {'user-agent': random.choice(user_agents),
@@ -149,10 +150,11 @@ def addPossibleUpFromRanking():
             time.sleep(random.random() * 10)
     return missed
 
-def getFollowingsByID(up, headers, url_head, direction, n):
+def crawlFollowingsByID(up, headers, url_head, direction, n):
+    # crawl up's following list in `direction` order for `n` people.
     mysqlconnect = MysqlConnect()
     missed = []
-    crawled=0
+    visited=0
     for i in range(1, 6):
         url = url_head + f'pn={i}&ps=50&order={direction}&jsonp=jsonp'
         print(url)
@@ -170,7 +172,7 @@ def getFollowingsByID(up, headers, url_head, direction, n):
         for item in _json.get('data').get('list'):
             mid = item['mid']
             sql = 'SELECT 1 FROM `PossibleTopUp` WHERE `ID`={};'.format(mid)
-            if mysqlconnect.queryOutCome(sql):  # up existed
+            if mysqlconnect.queryOutCome(sql):  # up existed, skip to the next one
                 continue
             numFollowings, numFollowers = getFollowersByID(mid)
             if (numFollowers == numFollowings == 0):  # Failed to visit the F&F page
@@ -180,15 +182,16 @@ def getFollowingsByID(up, headers, url_head, direction, n):
             if numFollowers >= FAN_LIMIT:
                 ret = addOnePossibleUp(mid, numFollowings, numFollowers)
                 if ret: missed.append(ret)
-            crawled += 1
-            if crawled==n:
-                #print('you crawled',crawled,'ups.')
+            visited += 1
+            if visited == n:
+                # print('you crawled',crawled,'ups.')
                 break
-            time.sleep(random.random() * 10)
-        else:
+        else: # Continue if the inner loop wasn't broken.
             time.sleep(random.random() * 10)
             continue
+        # Inner loop was broken, break the outer.
         break
+    print(f'You just visited {visited} from {up}\'s following list.\n')
     return missed
 
 
@@ -243,14 +246,25 @@ def crawlUpFollowing():
     upList = [(up, numFollowings) for (up,numFollowings,) in mysqlconnect.queryOutCome(sql)]
     random.shuffle(upList)
     for up, numFollowings in upList:
-    #for up, numFollowings in [(946974,352)]:
         headers['referer']='https://space.bilibili.com/{}/fans/follow'.format(up)
         url_head = f'https://api.bilibili.com/x/relation/followings?vmid={up}&'
-        missed += getFollowingsByID(up, headers, url_head, 'asc', min(250, numFollowings))
-        numFollowings -= 250
-        if numFollowings>0: # crawl from the reverse direction but only took first `remaining` ones
-            missed += getFollowingsByID(up, headers, url_head, 'desc', min(250,numFollowings))
-        print('finished up ', up)
+
+        sql = f'SELECT COUNT(*) FROM Up{up};'
+        (numRows,) = mysqlconnect.queryOutCome(sql)[0]
+        if numRows>=2: # The up's following list has already been fully(2*250) crawled, only need to check new added
+            # using today's numFollowing compare to the numFollowing you just got from NewestTop100
+            todayFollowings, todayFollowers = getFollowersByID(up)
+            print(f"Up {up} has {numFollowings} followings yestoday and {todayFollowings} today.")
+            if todayFollowings-numFollowings>0: missed += crawlFollowingsByID(up, headers, url_head, 'desc', todayFollowings-numFollowings)
+
+        else: # This up's following list has not been fully crawled, need to do that
+            print(f'This is the first time to crawl Up {up}\'s following list.')
+            missed += crawlFollowingsByID(up, headers, url_head, 'asc', min(250, numFollowings))
+            numFollowings -= 250
+            if numFollowings > 0:  # crawl from the reverse direction but only took first `remaining` ones
+                missed += crawlFollowingsByID(up, headers, url_head, 'desc', min(250, numFollowings))
+
+        print('finished up ', up,'\n')
     print('Failed to crawl these Ups:', missed)
     return missed
 
@@ -308,13 +322,15 @@ if __name__ == "__main__":
     refreshPossibleTopUp()
     print('Refreshed PossibledTopUp')
     time.sleep(1800) # stop for 10 min
-    '''
     # 2. Add new ones into PossibleTopUP via TOP100's following list and today's video ranking
-    addPossibleUpFromRanking()
-    print('Added PossibleTopUp from Hot Videos Rankings')
-    time.sleep(1800) # stop for 30 min
+    #addPossibleUpFromRanking()
+    #print('Added PossibleTopUp from Hot Videos Rankings')
+    #time.sleep(1800) # stop for 30 min
+    '''
     crawlUpFollowing()
     print('Added PossibleTopUp from Following Lists')
+
+    '''
     # 3. Update Top100 according to newst possibleTopUp
     updateTop100()
     # 4. Collect today's date's data for every top100 Up
@@ -328,6 +344,7 @@ if __name__ == "__main__":
         #updateUpByDate(up, str(datetime.now().date()))
         #updateUpByDate(up, str(datetime.now()))
         updateUpByDate(up, str(datetime.now() + timedelta(hours=15)))
+    '''
 
     '''
     # If dropped the PossibleTopUp by accidently, use below code
