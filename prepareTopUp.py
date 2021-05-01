@@ -130,6 +130,7 @@ def addPossibleUpFromRanking():
     mysqlconnect = MysqlConnect()
     missed = []
     for field, url in urlDict.items():
+        print(f"Start Processing {field} Ranking")
         spider = Spider(url, headers)
         spider.setSoup()
         itemList = spider.findTagByAttrs('li', {'class': 'rank-item'})
@@ -144,7 +145,7 @@ def addPossibleUpFromRanking():
                 continue
             time.sleep(random.random() * 5)
             if numFollowers >= FAN_LIMIT:
-                print("catched one:", mid,numFollowers)
+                print("catched one:", mid, numFollowers)
                 ret = addOnePossibleUp(mid, numFollowings, numFollowers)
                 if ret: missed.append(ret)
             time.sleep(random.random() * 10)
@@ -249,10 +250,14 @@ def crawlUpFollowing():
         headers['referer']='https://space.bilibili.com/{}/fans/follow'.format(up)
         url_head = f'https://api.bilibili.com/x/relation/followings?vmid={up}&'
 
-        sql = f'SELECT COUNT(*) FROM Up{up};'
-        (numRows,) = mysqlconnect.queryOutCome(sql)[0]
-        if numRows>=2: # The up's following list has already been fully(2*250) crawled, only need to check new added
-            # using today's numFollowing compare to the numFollowing you just got from NewestTop100
+        # scenario 1: the Up is added to PossibleTop yesterday, we have not fully crawled his/her following list yet.
+        sql1 = f'SELECT COUNT(*) FROM Up{up};'
+        (numRows,) = mysqlconnect.queryOutCome(sql1)[0]
+        # scenario 2: the Up is added to PossibleTop from ranking just now, we have not create individual table for he/she yet.
+        sql2 = f"select * from information_schema.TABLES where TABLE_NAME = 'Up{up};"
+        created = mysqlconnect.queryOutCome(sql2)
+
+        if created and numRows>=2: # only crawl the new followings
             todayFollowings, todayFollowers = getFollowersByID(up)
             print(f"Up {up} has {numFollowings} followings yestoday and {todayFollowings} today.")
             if todayFollowings-numFollowings>0: missed += crawlFollowingsByID(up, headers, url_head, 'desc', todayFollowings-numFollowings)
@@ -317,15 +322,16 @@ if __name__ == "__main__":
     #initialTop100('https://www.bilibili.com/read/cv10601513')
     #updateTop100()
 
+
     # --------- Call below every day ----------------------
     # 1. Refresh PossibleTopUp
     refreshPossibleTopUp()
     print('Refreshed PossibledTopUp')
     time.sleep(1800) # stop for 10 min
     # 2. Add new ones into PossibleTopUP via TOP100's following list and today's video ranking
-    #addPossibleUpFromRanking()
-    #print('Added PossibleTopUp from Hot Videos Rankings')
-    #time.sleep(1800) # stop for 30 min
+    addPossibleUpFromRanking()
+    print('Added PossibleTopUp from Hot Videos Rankings')
+    time.sleep(1800) # stop for 30 min
     crawlUpFollowing()
     print('Added PossibleTopUp from Following Lists')
     # 3. Update Top100 according to newst possibleTopUp
@@ -334,13 +340,15 @@ if __name__ == "__main__":
     mysqlconnect = MysqlConnect()
     sql = "SELECT `ID` from `PossibleTopUp`;"
     upList = [up for (up,) in mysqlconnect.queryOutCome(sql)]
-    #print(upList)
+    print(upList)
     for up in upList:
         #sql = "DROP TABLE IF EXISTS `UP{}`;".format(up)
         #mysqlconnect.queryOutCome(sql)
         #updateUpByDate(up, str(datetime.now().date()))
         updateUpByDate(up, str(datetime.now()))
-        #updateUpByDate(up, str(datetime.now() + timedelta(hours=15))) 我用的
+        #updateUpByDate(up, str(datetime.now() + timedelta(hours=15))) # LY用
+
+
 
     '''
     # --------- If dropped the PossibleTopUp by accidently, use below code ----------------------
