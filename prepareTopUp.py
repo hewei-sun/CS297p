@@ -316,7 +316,7 @@ def dropAll():
 if __name__ == "__main__":
     #initialTop100('https://www.bilibili.com/read/cv10601513')
     #updateTop100()
-    '''
+
     # --------- Call below every day ----------------------
     # 1. Refresh PossibleTopUp
     refreshPossibleTopUp()
@@ -326,11 +326,8 @@ if __name__ == "__main__":
     #addPossibleUpFromRanking()
     #print('Added PossibleTopUp from Hot Videos Rankings')
     #time.sleep(1800) # stop for 30 min
-    '''
     crawlUpFollowing()
     print('Added PossibleTopUp from Following Lists')
-
-    '''
     # 3. Update Top100 according to newst possibleTopUp
     updateTop100()
     # 4. Collect today's date's data for every top100 Up
@@ -342,12 +339,11 @@ if __name__ == "__main__":
         #sql = "DROP TABLE IF EXISTS `UP{}`;".format(up)
         #mysqlconnect.queryOutCome(sql)
         #updateUpByDate(up, str(datetime.now().date()))
-        #updateUpByDate(up, str(datetime.now()))
-        updateUpByDate(up, str(datetime.now() + timedelta(hours=15)))
-    '''
+        updateUpByDate(up, str(datetime.now()))
+        #updateUpByDate(up, str(datetime.now() + timedelta(hours=15))) 我用的
 
     '''
-    # If dropped the PossibleTopUp by accidently, use below code
+    # --------- If dropped the PossibleTopUp by accidently, use below code ----------------------
     mysqlconnect = MysqlConnect()
     sql = 'SELECT table_name FROM information_schema.TABLES'
     upList = [tb[2:] for (tb,) in mysqlconnect.queryOutCome(sql) if tb[0:2]=='Up']
