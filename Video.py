@@ -1,5 +1,4 @@
 import requests
-from bokeh.io import webdriver
 from bs4 import BeautifulSoup
 import re
 import jieba
@@ -11,9 +10,12 @@ import time, random
 from pandas import Series, DataFrame
 from Spider import Spider
 
+user_agents='Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36'
+headers = {'user-agent': user_agents,
+           'referer': ''}
 
 class Video:
-    def __init__(self, rank=None, title=None, bv=None, score=None, play=None, view=None, up_name=None, up_id=None):
+    def __init__(self, rank=None, title=None, bv=None, score=None, play=None, view=None, up_name=None, up_id=None, cover_url=None):
         self.rank = rank
         self.title = title
         self.bvid = bv
@@ -22,14 +24,39 @@ class Video:
         self.view = view
         self.up_name = up_name
         self.up_id = up_id
+        self.cover_url = cover_url
 
     def __str__(self):
-        return '{}.\tTitle:{}\tBVID:{}\tPlay:{}\tView:{}\tAuthor:{}\tAuthourID:{}\n'.format(self.rank, self.title, self.bvid,
-                                                                                          self.play, self.play,
-                                                                                            self.up_name, self.up_id)
+        return '{}.\tTitle:{}\tBVID:{}\tPlay:{}\tView:{}\tAuthor:{}\tAuthourID:{}\tCoverURL:{}\n'.format(self.rank, self.title, self.bvid,
+                                                                                          self.play, self.view,
+                                                                                            self.up_name, self.up_id,self.cover_url)
 
-    def get_info(self):
-        return [self.rank, self.title, self.bvid, self.score, self.play, self.view, self.up_name, self.up_id]
+    def get_cover(self):
+        url = f'https://www.bilibili.com/video/{self.bvid}'
+        spider = Spider(url, headers)
+        spider.setSoup()
+        cover_url = spider.soup.find('meta', {'itemprop': 'image'}).get('content')
+        return cover_url
+
+    def start_crawlling(self):
+        if not self.bvid:
+            print("No BVid Given Yet.")
+            return
+        url = f'https://www.bilibili.com/video/{self.bvid}'
+        headers['referer'] = url
+        spider = Spider(url, headers)
+        spider.setSoup()
+        statistics = spider.soup.find('div',{'id':'viewbox_report'}).find_all('span')
+        self.title = statistics[0].text
+        self.play = statistics[1].text
+        self.view = statistics[2].text
+        self.publish_time = statistics[3].text
+        if len(statistics)>4 and self.rank==None: # the video has a history rank
+            self.rank = statistics[4].text.strip()
+        statistics = spider.soup.find('div',{'class':'up-info_right'}).find('a',{'class':'username'})
+        self.up_id = statistics.get('href')[len('//space.bilibili.com/'):]
+        self.up_name = statistics.text.strip()
+        self.cover_url = self.get_cover()
 
     def get_cid(self):
         url = 'https://api.bilibili.com/x/web-interface/view?bvid={}'.format(self.bvid)
@@ -147,7 +174,7 @@ class Video:
             while True:
                 url = f'https://api.bilibili.com/x/v2/reply?jsonp=jsonp&pn={n}&type=1&oid={oid}&sort=2'
                 print(url)
-                r = requests.get(url.format(n), headers=headers)
+                r = requests.get(url.format(n), headers=headers, timeout=5)
                 print(r.text)
                 _json = json.loads(r.text)
                 n += 1
@@ -178,10 +205,11 @@ class Video:
 
 if __name__ == "__main__":
     v = Video()
-    v.bvid = 'BV1QB4y1P7j9'
+    v.bvid = 'BV1Xo4y1f7vx'
     #v.generate_wordscloud_1()
     #v.generate_wordscloud_2()
-    v.comments_parse().to_csv('comments.csv')
+    #v.comments_parse().to_csv('comments.csv')
+    v.start_crawlling()
 
 
 

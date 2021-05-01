@@ -6,10 +6,17 @@ class MysqlConnect:  # Connect to MySQL
         pass
 
     def getConnect(self):
+        '''
         db = pymysql.connect(
-            host='localhost', user='root', passwd='TSxsy240319!', autocommit=True,
-            port=3306, db='BilibiliUp', charset='utf8'
+            host='39.108.63.191', user='root', passwd='Kswl2021', autocommit=True,
+            port=3306, db='test1', charset='utf8'
         )
+        '''
+        db = pymysql.connect(
+            host='39.108.63.191', user='root', passwd='Kswl2021', autocommit=True,
+            port=3306, db='bilibili', charset='utf8'
+        )
+        
         return db
 
     def createTable1(self):
@@ -34,6 +41,8 @@ class MysqlConnect:  # Connect to MySQL
         table2 = '''CREATE TABLE `NewestTop100`
                         (
                             `ID` INT UNIQUE,
+                            `Rank` INT,
+                            `Followings` INT,
                              PRIMARY KEY(ID)
                         )ENGINE=innodb DEFAULT CHARSET=utf8;'''
         db = self.getConnect()
@@ -52,6 +61,9 @@ class MysqlConnect:  # Connect to MySQL
         except:
             print("failed...")
             db.rollback()
+        finally:
+            # Shutdown connect
+            db.close()
 
     def getInsertToTable1Sql(self, tableName, ID, numFollowings, numFollowers, nunmLikes, numViews):
         sql = '''
@@ -59,10 +71,10 @@ class MysqlConnect:  # Connect to MySQL
             '''.format(tableName, ID, numFollowings, numFollowers, nunmLikes, numViews)
         return sql
 
-    def getInsertToTable2Sql(self, tableName, ID):
+    def getInsertToTable2Sql(self, tableName, ID, rank, numFollowings):
         sql = '''
-            INSERT INTO `{}` VALUES ({});
-            '''.format(tableName, ID)
+            INSERT INTO `{}` VALUES ({}, {}, {});
+            '''.format(tableName, ID, rank, numFollowings)
         return sql
 
     def queryOutCome(self, sql):

@@ -9,7 +9,7 @@ class Spider:
 
     def getHTML(self):
         try:
-            response = requests.get(url=self.url, headers=self.headers)
+            response = requests.get(url=self.url, headers=self.headers, timeout=5)
             return response.text
         except:
             return "Sorry, due to some reason, you failed to visit the page."
