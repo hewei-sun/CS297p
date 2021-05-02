@@ -123,6 +123,7 @@ def addOnePossibleUp(mid, numFollowings, numFollowers):
         return mid
     sql = mysqlconnect.getInsertToTable1Sql('PossibleTopUp', mid, numFollowings, numFollowers, numLikes, numViews)
     mysqlconnect.insertInfo(sql)
+    print(f'Just inserted a new Up {mid} to PossibleTopUp')
     return None
 
 def addPossibleUpFromRanking():
@@ -171,6 +172,7 @@ def crawlFollowingsByID(up, headers, url_head, direction, n):
             print('Empty Page {}'.format(url))
             break
         for item in _json.get('data').get('list'):
+            visited += 1
             mid = item['mid']
             sql = 'SELECT 1 FROM `PossibleTopUp` WHERE `ID`={};'.format(mid)
             if mysqlconnect.queryOutCome(sql):  # up existed, skip to the next one
@@ -183,16 +185,14 @@ def crawlFollowingsByID(up, headers, url_head, direction, n):
             if numFollowers >= FAN_LIMIT:
                 ret = addOnePossibleUp(mid, numFollowings, numFollowers)
                 if ret: missed.append(ret)
-            visited += 1
-            if visited == n:
-                # print('you crawled',crawled,'ups.')
+            if visited >= n:
                 break
         else: # Continue if the inner loop wasn't broken.
             time.sleep(random.random() * 10)
             continue
         # Inner loop was broken, break the outer.
         break
-    print(f'You just visited {visited} from {up}\'s following list.\n')
+    print(f'You just visited {visited} from {up}\'s following list in {direction} order.\n')
     return missed
 
 
@@ -247,17 +247,18 @@ def crawlUpFollowing():
     upList = [(up, numFollowings) for (up,numFollowings,) in mysqlconnect.queryOutCome(sql)]
     random.shuffle(upList)
     for up, numFollowings in upList:
+    #for up, numFollowings in [(37090048,1251)]:
         headers['referer']='https://space.bilibili.com/{}/fans/follow'.format(up)
         url_head = f'https://api.bilibili.com/x/relation/followings?vmid={up}&'
 
-        # scenario 1: the Up is added to PossibleTop yesterday, we have not fully crawled his/her following list yet.
-        sql1 = f'SELECT COUNT(*) FROM Up{up};'
-        (numRows,) = mysqlconnect.queryOutCome(sql1)[0]
-        # scenario 2: the Up is added to PossibleTop from ranking just now, we have not create individual table for he/she yet.
-        sql2 = f"select * from information_schema.TABLES where TABLE_NAME = 'Up{up};"
-        created = mysqlconnect.queryOutCome(sql2)
+        sql1 = f'SHOW TABLES LIKE \"Up{up}\";' # In case we missed creating an individual table for some top100
+        tableExisted = mysqlconnect.queryOutCome(sql1)
+        numRows = 0
+        if tableExisted:
+            sql2 = f'SELECT COUNT(*) FROM Up{up};' # In case the Up is added to PossibleTop yesterday, we have not fully crawled his/her following list yet.
+            (numRows,) = mysqlconnect.queryOutCome(sql2)[0]
 
-        if created and numRows>=2: # only crawl the new followings
+        if numRows>=2: # only crawl the new followings
             todayFollowings, todayFollowers = getFollowersByID(up)
             print(f"Up {up} has {numFollowings} followings yestoday and {todayFollowings} today.")
             if todayFollowings-numFollowings>0: missed += crawlFollowingsByID(up, headers, url_head, 'desc', todayFollowings-numFollowings)
@@ -322,7 +323,7 @@ if __name__ == "__main__":
     #initialTop100('https://www.bilibili.com/read/cv10601513')
     #updateTop100()
 
-
+ 
     # --------- Call below every day ----------------------
     # 1. Refresh PossibleTopUp
     refreshPossibleTopUp()
@@ -345,10 +346,10 @@ if __name__ == "__main__":
         #sql = "DROP TABLE IF EXISTS `UP{}`;".format(up)
         #mysqlconnect.queryOutCome(sql)
         #updateUpByDate(up, str(datetime.now().date()))
-        updateUpByDate(up, str(datetime.now()))
-        #updateUpByDate(up, str(datetime.now() + timedelta(hours=15))) # LY用
+        #updateUpByDate(up, str(datetime.now()))
+        updateUpByDate(up, str(datetime.now() + timedelta(hours=15))) # ly用
 
-
+    #crawlUpFollowing()
 
     '''
     # --------- If dropped the PossibleTopUp by accidently, use below code ----------------------
