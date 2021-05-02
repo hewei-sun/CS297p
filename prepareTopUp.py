@@ -4,6 +4,7 @@ from MysqlConnect import MysqlConnect
 from Spider import Spider
 from videoRankings import getURLFormBilibili
 from datetime import datetime, timedelta
+from math import ceil
 '''
 user_agents=['Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36']
 headers = {'user-agent': random.choice(user_agents),
@@ -111,6 +112,7 @@ def addOnePossibleUp(mid, numFollowings, numFollowers):
         return mid
     sql = mysqlconnect.getInsertToTable1Sql('PossibleTopUp', mid, numFollowings, numFollowers, numLikes, numViews)
     mysqlconnect.insertInfo(sql)
+    print(f'Just inserted a new Up {mid} to PossibleTopUp')
     return None
 
 def addPossibleUpFromRanking():
@@ -118,6 +120,7 @@ def addPossibleUpFromRanking():
     mysqlconnect = MysqlConnect()
     missed = []
     for field, url in urlDict.items():
+        print(f"Start Processing {field} Ranking")
         spider = Spider(url, headers)
         spider.setSoup()
         itemList = spider.findTagByAttrs('li', {'class': 'rank-item'})
@@ -132,16 +135,17 @@ def addPossibleUpFromRanking():
                 continue
             time.sleep(random.random() * 5)
             if numFollowers >= FAN_LIMIT:
-                print("catched one:", mid,numFollowers)
+                print("catched one:", mid, numFollowers)
                 ret = addOnePossibleUp(mid, numFollowings, numFollowers)
                 if ret: missed.append(ret)
             time.sleep(random.random() * 10)
     return missed
 
-def getFollowingsByID(up, headers, url_head, direction, n):
+def crawlFollowingsByID(up, headers, url_head, direction, n):
+    # crawl up's following list in `direction` order for `n` people.
     mysqlconnect = MysqlConnect()
     missed = []
-    crawled=0
+    visited=0
     for i in range(1, 6):
         url = url_head + f'pn={i}&ps=50&order={direction}&jsonp=jsonp'
         print(url)
@@ -157,9 +161,10 @@ def getFollowingsByID(up, headers, url_head, direction, n):
             print('Empty Page {}'.format(url))
             break
         for item in _json.get('data').get('list'):
+            visited += 1
             mid = item['mid']
             sql = 'SELECT 1 FROM `PossibleTopUp` WHERE `ID`={};'.format(mid)
-            if mysqlconnect.queryOutCome(sql):  # up existed
+            if mysqlconnect.queryOutCome(sql):  # up existed, skip to the next one
                 continue
             numFollowings, numFollowers = getFollowersByID(mid)
             if (numFollowers == numFollowings == 0):  # Failed to visit the F&F page
@@ -169,15 +174,14 @@ def getFollowingsByID(up, headers, url_head, direction, n):
             if numFollowers >= FAN_LIMIT:
                 ret = addOnePossibleUp(mid, numFollowings, numFollowers)
                 if ret: missed.append(ret)
-            crawled += 1
-            if crawled==n:
-                #print('you crawled',crawled,'ups.')
+            if visited >= n:
                 break
+        else: # Continue if the inner loop wasn't broken.
             time.sleep(random.random() * 10)
-        else:
-            #time.sleep(random.random() * 10)
             continue
+        # Inner loop was broken, break the outer.
         break
+    print(f'You just visited {visited} from {up}\'s following list in {direction} order.\n')
     return missed
 
 
@@ -216,15 +220,31 @@ def crawlUpFollowing():
     upList = [(up, numFollowings) for (up,numFollowings,) in mysqlconnect.queryOutCome(sql)]
     random.shuffle(upList)
     for up, numFollowings in upList:
-    #for up, numFollowings in [(946974,352)]:
+    #for up, numFollowings in [(37090048,1251)]:
         headers['referer']='https://space.bilibili.com/{}/fans/follow'.format(up)
         url_head = f'https://api.bilibili.com/x/relation/followings?vmid={up}&'
-        missed += getFollowingsByID(up, headers, url_head, 'asc', min(250, numFollowings))
-        numFollowings -= 250
-        if numFollowings>0: # crawl from the reverse direction but only took first `remaining` ones
-            missed += getFollowingsByID(up, headers, url_head, 'desc', min(250,numFollowings))
-        print('finished up ', up)
-    #print('Failed to crawl these Ups:', missed)
+
+        sql1 = f'SHOW TABLES LIKE \"Up{up}\";' # In case we missed creating an individual table for some top100
+        tableExisted = mysqlconnect.queryOutCome(sql1)
+        numRows = 0
+        if tableExisted:
+            sql2 = f'SELECT COUNT(*) FROM Up{up};' # In case the Up is added to PossibleTop yesterday, we have not fully crawled his/her following list yet.
+            (numRows,) = mysqlconnect.queryOutCome(sql2)[0]
+
+        if numRows>=2: # only crawl the new followings
+            todayFollowings, todayFollowers = getFollowersByID(up)
+            print(f"Up {up} has {numFollowings} followings yestoday and {todayFollowings} today.")
+            if todayFollowings-numFollowings>0: missed += crawlFollowingsByID(up, headers, url_head, 'desc', todayFollowings-numFollowings)
+
+        else: # This up's following list has not been fully crawled, need to do that
+            print(f'This is the first time to crawl Up {up}\'s following list.')
+            missed += crawlFollowingsByID(up, headers, url_head, 'asc', min(250, numFollowings))
+            numFollowings -= 250
+            if numFollowings > 0:  # crawl from the reverse direction but only took first `remaining` ones
+                missed += crawlFollowingsByID(up, headers, url_head, 'desc', min(250, numFollowings))
+
+        print('finished up ', up,'\n')
+    print('Failed to crawl these Ups:', missed)
     return missed
 
 def updateTop100():
@@ -279,10 +299,20 @@ def recover():
     upList = [tb[2:] for (tb,) in mysqlconnect.queryOutCome(sql) if tb[0:2]=='Up']
     refreshPossibleTopUp(upList)
 
+def dropfirst():
+    # --------- Use below code to drop the latest row of Up table----------------------
+    mysqlconnect = MysqlConnect()
+    sql = 'SELECT table_name FROM information_schema.TABLES'
+    upList = [tb[2:] for (tb,) in mysqlconnect.queryOutCome(sql) if tb[0:2] == 'Up']
+    for up in upList:
+        sql = f"DELETE FROM `Up{up}` ORDER BY `Date` DESC LIMIT 1"
+        print(mysqlconnect.queryOutCome(sql))
+
 if __name__ == "__main__":
     print(datetime.now())
     #initialTop100('https://www.bilibili.com/read/cv10601513')
     #updateTop100()
+
     
     # --------- Call below every day ----------------------
     # 1. Refresh PossibleTopUp
@@ -306,7 +336,7 @@ if __name__ == "__main__":
     '''
     print('Added PossibleTopUp from Hot Videos Rankings')
     '''
-    time.sleep(1800) # stop for 30 min
+    time.sleep(600) # stop for 10 min
     crawlUp = crawlUpFollowing()
     if len(crawlUp) != 0:
         with open("crawlMissed.txt", 'a+') as f:
@@ -321,7 +351,7 @@ if __name__ == "__main__":
     mysqlconnect = MysqlConnect()
     sql = "SELECT `ID` from `PossibleTopUp`;"
     upList = [up for (up,) in mysqlconnect.queryOutCome(sql)]
-    #print(upList)
+    print(upList)
     for up in upList:
         updateUpByDate(up, str(datetime.now()))
         #updateUpByDate(up, str(datetime.now() + timedelta(hours=15)))
