@@ -323,16 +323,17 @@ if __name__ == "__main__":
     #initialTop100('https://www.bilibili.com/read/cv10601513')
     #updateTop100()
 
- 
+    '''
     # --------- Call below every day ----------------------
     # 1. Refresh PossibleTopUp
     refreshPossibleTopUp()
     print('Refreshed PossibledTopUp')
     time.sleep(1800) # stop for 10 min
+    '''
     # 2. Add new ones into PossibleTopUP via TOP100's following list and today's video ranking
     addPossibleUpFromRanking()
     print('Added PossibleTopUp from Hot Videos Rankings')
-    time.sleep(1800) # stop for 30 min
+    time.sleep(600) # stop for 10 min
     crawlUpFollowing()
     print('Added PossibleTopUp from Following Lists')
     # 3. Update Top100 according to newst possibleTopUp
@@ -349,7 +350,6 @@ if __name__ == "__main__":
         #updateUpByDate(up, str(datetime.now()))
         updateUpByDate(up, str(datetime.now() + timedelta(hours=15))) # ly用
 
-    #crawlUpFollowing()
 
     '''
     # --------- If dropped the PossibleTopUp by accidently, use below code ----------------------
@@ -357,4 +357,14 @@ if __name__ == "__main__":
     sql = 'SELECT table_name FROM information_schema.TABLES'
     upList = [tb[2:] for (tb,) in mysqlconnect.queryOutCome(sql) if tb[0:2]=='Up']
     refreshPossibleTopUp(upList)
+    '''
+
+    '''
+    # --------- Use below code to drop the latest row of Up table----------------------
+    mysqlconnect = MysqlConnect()
+    sql = 'SELECT table_name FROM information_schema.TABLES'
+    upList = [tb[2:] for (tb,) in mysqlconnect.queryOutCome(sql) if tb[0:2] == 'Up']
+    for up in upList:
+        sql = f"DELETE FROM `Up{up}` ORDER BY `Date` DESC LIMIT 1"
+        print(mysqlconnect.queryOutCome(sql))
     '''
