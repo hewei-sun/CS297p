@@ -21,15 +21,29 @@ class Video:
         self.bvid = bv
         self.score = score
         self.play = play
-        self.view = view
+        self.view = view # danmu
         self.up_name = up_name
         self.up_id = up_id
         self.cover_url = cover_url
 
+        # below attributes will be collected from ways other than ranking crawling
+        self.description = None
+        self.tname = None # Some video has been stated its primary tag name
+        self.publish_time = None
+        self.duration = None
+        self.reply = None #评论
+        self.like = None #点赞
+        self.coin = None #币
+        self.collect = None #收藏
+        self.share = None #转发
+        self.tags = []  # ordered by weight, more left more weighted.
+
     def __str__(self):
-        return '{}.\tTitle:{}\tBVID:{}\tPlay:{}\tView:{}\tAuthor:{}\tAuthourID:{}\tCoverURL:{}\n'.format(self.rank, self.title, self.bvid,
-                                                                                          self.play, self.view,
-                                                                                            self.up_name, self.up_id,self.cover_url)
+        return '{}.\tTitle:{}\tBVID:{}\tPlay:{}\tView:{}\t' \
+               'Author:{}\tAuthourID:{}\tCoverURL:{}\n'.format(self.rank, self.title, self.bvid,self.play, self.view, self.up_name, self.up_id,self.cover_url)
+    def printInfo(self):
+        for key,val in self.__dict__.items():
+            if val: print(key,' : ',val)
 
     def get_cover(self):
         url = f'https://www.bilibili.com/video/{self.bvid}'
@@ -57,6 +71,15 @@ class Video:
         self.up_id = statistics.get('href')[len('//space.bilibili.com/'):]
         self.up_name = statistics.text.strip()
         self.cover_url = self.get_cover()
+
+        self.like = spider.soup.find('span',{'class':'like'}).text.strip()  # 点赞
+        self.coin = spider.soup.find('span',{'class':'coin'}).text.strip()  # 币
+        self.collect = spider.soup.find('span',{'class':'collect'}).text.strip()  # 收藏
+        self.share = spider.soup.find('span',{'class':'share'}).text.strip()  # 转发
+
+        for item in spider.soup.find_all('li', {'class':'tag'}):
+            self.tags.append(item.text.strip())
+
 
     def get_cid(self):
         url = 'https://api.bilibili.com/x/web-interface/view?bvid={}'.format(self.bvid)
@@ -163,22 +186,24 @@ class Video:
             self.video_title = video_title[0].split('_哔哩哔哩')[0]
         return aim_oid
 
-    def comments_parse(self):
+    def comments_parse(self, max=None):
         oid = self.get_oid(f'https://www.bilibili.com/video/{self.bvid}')
         n = 1
+        i = 0
         headers={'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
                                'AppleWebKit/537.36 (KHTML, like Gecko) '
                                'Chrome/86.0.4240.75 Safari/537.36'}
         df = []
         try:
-            while True:
+            while i<max:
+                if max and i>=max: break
                 url = f'https://api.bilibili.com/x/v2/reply?jsonp=jsonp&pn={n}&type=1&oid={oid}&sort=2'
-                print(url)
+                print('Visiting comment page: ',url)
                 r = requests.get(url.format(n), headers=headers, timeout=5)
-                print(r.text)
                 _json = json.loads(r.text)
                 n += 1
                 for replie in _json['data']['replies']:
+                    i += 1
                     item = {}
                     item['user_id'] = replie.get('member').get('mid')  # 用户id
                     item['user_name'] = replie.get('member').get('uname')  # 用户名
@@ -197,19 +222,28 @@ class Video:
                     item['comment_date'] = otherStyleTime
                     item['comment'] = replie.get('content').get('message')  # 评论内容
                     df.append(item)
-                time.sleep(random.random())
+                    if max and i>=max:
+                        break
+                else:  # Continue if the inner loop wasn't broken.
+                    time.sleep(random.random()*2)
+                    continue
+                # Inner loop was broken, break the outer.
+                break
+
         except:
             pass
+
         df = DataFrame(df)
         return df
 
 if __name__ == "__main__":
     v = Video()
-    v.bvid = 'BV1Xo4y1f7vx'
+    v.bvid = 'BV1vy4y1s7CY'
+    v.start_crawlling()
+    v.printInfo()
+    v.comments_parse(50).to_csv('comments.csv')
     #v.generate_wordscloud_1()
     #v.generate_wordscloud_2()
-    #v.comments_parse().to_csv('comments.csv')
-    v.start_crawlling()
 
 
 
