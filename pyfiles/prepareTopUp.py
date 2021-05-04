@@ -333,10 +333,11 @@ if __name__ == "__main__":
         with open("rankMissed.txt", 'a+') as f:
             for up in rankUp:
                 f.write(str(up)+"\n")
-    '''
+    
     print('Added PossibleTopUp from Hot Videos Rankings')
     '''
     time.sleep(600) # stop for 10 min
+    updateTop100()
     crawlUp = crawlUpFollowing()
     if len(crawlUp) != 0:
         with open("crawlMissed.txt", 'a+') as f:
@@ -355,5 +356,5 @@ if __name__ == "__main__":
     for up in upList:
         updateUpByDate(up, str(datetime.now()))
         #updateUpByDate(up, str(datetime.now() + timedelta(hours=15)))
-    '''
+    
     print(datetime.now())
