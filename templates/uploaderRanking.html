@@ -1,0 +1,40 @@
+<!DOCTYPE html> 
+<meta charset="utf-8">
+<html>
+    <head>
+        <title>Data Analysis Platform for Bilibili</title>
+        <link href="static/bootstrap/css/bootstrap/3.3.6/bootstrap.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="static/bootstrap-select/bootstrap-select.min.css">
+        <script src="static/bootstrap/js/jquery/2.0.0/jquery.min.js"></script>
+        <script src="static/bootstrap-select/bootstrap-select.min.js"></script>
+        <script src="static/bootstrap/js/bootstrap/3.3.6/bootstrap.min.js"></script>
+        <script src="static/echarts/echarts.min.js"></script>
+    </head>
+    <body>
+        <br>
+        <br>
+        <br>
+        <p><h1 style="text-align:center">Uploader Ranking</h1></p>
+        <center></center><table id = 'tab' border="1">
+            <tr>
+                <th>rank</th>
+                <th>id</th>
+                <th>followings</th>
+            </tr>
+        </table></center>
+        <script type = "text/javascript">
+            console.log({{upList}})
+            console.log({{upList}}[2])
+            console.log({{upList}}.length)
+            var str = "";
+            console.log(typeof {{upList}}[2][0])
+            var l = {{upList}}[2][0].toString()
+            console.log(typeof l)
+            for (var i = 0; i < {{upList}}.length; i++) {
+                str = "<tr><td>" + {{upList}}[i][2].toString()+ "</td><td>" +{{upList}}[i][0].toString() + "</td><td>"+{{upList}}[i][1].toString()+"</td></tr>";
+                $("#tab").append(str);
+            }
+        </script>
+
+    </body>
+</html>
