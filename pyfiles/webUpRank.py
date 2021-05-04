@@ -1,8 +1,8 @@
 import requests
 import time, random
 from datetime import datetime
-from CS297p.MysqlConnect import MysqlConnect
-from CS297p.Spider import Spider
+from pyfiles.MysqlConnect import MysqlConnect
+from pyfiles.Spider import Spider
 
 def webUpRank():
     mysqlconnect = MysqlConnect()
