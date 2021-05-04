@@ -1,6 +1,6 @@
 # coding=utf-8
 from flask import Flask, render_template, request, redirect, url_for, make_response,jsonify
-from CS297p.webUpRank import webUpRank
+from pyfiles.webUpRank import webUpRank
 import json
 app = Flask(__name__)
 
