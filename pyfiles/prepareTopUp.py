@@ -78,6 +78,26 @@ def initialTop100(url): # Only called at Day 1
             mysqlconnect.insertInfo(sql)
         time.sleep(random.random() * 5)
 
+def checkTopUp(url):
+    spider = Spider(url,headers)
+    spider.setSoup()
+    itemList = spider.findTag('p')
+    mysqlconnect = MysqlConnect()
+    for item in itemList:
+        if item.find('a'):
+            spaceLink = item.find('a').get('href')
+            #print(spaceLink)
+            upID = spaceLink[len('https://space.bilibili.com/'):]
+            sql = '''SELECT COUNT(`ID`) FROM `PossibleTopUp` WHERE `ID` = {};'''.format(upID)
+            (rank) = mysqlconnect.queryOutCome(sql)[0][0]
+            if rank == 0:
+                numFollowings, numFollowers = getFollowersByID(upID)
+                time.sleep(random.random())
+                numLikes, numViews = getLikesByID(upID)
+                print(upID, numFollowings, numFollowers, numLikes, numViews)
+                sql = mysqlconnect.getInsertToTable1Sql('PossibleTopUp', upID, numFollowings, numFollowers, numLikes, numViews)
+                mysqlconnect.insertInfo(sql)
+        time.sleep(random.random() * 5)
 
 # Refresh Up's 4 data in possibleTopUp
 def refreshPossibleTopUp(upList=None):
@@ -304,6 +324,7 @@ def dropfirst():
     mysqlconnect = MysqlConnect()
     sql = 'SELECT table_name FROM information_schema.TABLES'
     upList = [tb[2:] for (tb,) in mysqlconnect.queryOutCome(sql) if tb[0:2] == 'Up']
+    print(upList)
     for up in upList:
         sql = f"DELETE FROM `Up{up}` ORDER BY `Date` DESC LIMIT 1"
         print(mysqlconnect.queryOutCome(sql))
@@ -311,18 +332,20 @@ def dropfirst():
 if __name__ == "__main__":
     print(datetime.now())
     #initialTop100('https://www.bilibili.com/read/cv10601513')
+    #checkTopUp('https://www.bilibili.com/read/cv11147845')
+    #print("done check")
     #updateTop100()
 
     
     # --------- Call below every day ----------------------
     # 1. Refresh PossibleTopUp
-    '''
+    
     refreshUp = refreshPossibleTopUp()
     if len(refreshUp) != 0:
         with open("refreshMissed.txt", 'a+') as f:
             for up in refreshUp:
                 f.write(str(up)+"\n")
-    '''
+    
     print('Refreshed PossibledTopUp')
     #time.sleep(1800) # stop for 10 min
     
