@@ -238,7 +238,7 @@ def addFollowingbyID(up,headers,url_head,direction,n):
             #sql = '''INSERT INTO `following{}` VALUES ({}, {},{});'''.format(up, mid, numFollowings, numFollowers)
             sql = '''INSERT INTO `following{}` VALUES ({});'''.format(up, mid)
             mysqlconnect.insertInfo(sql)
-            time.sleep(random.random() * 5)
+            #time.sleep(random.random() * 5)
             if visited >= n:
                 break
         else: # Continue if the inner loop wasn't broken.
