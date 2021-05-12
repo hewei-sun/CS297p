@@ -451,16 +451,16 @@ if __name__ == "__main__":
     print('Added PossibleTopUp from Following Lists')
 
     # 3. Refresh PossibleTopUp
-    '''
+    
     refreshUp = refreshPossibleTopUp()
     if len(refreshUp) != 0:
         with open("refreshMissed.txt", 'a+') as f:
             for up in refreshUp:
                 f.write(str(up)+"\n")
     print('Refreshed PossibledTopUp')
-    '''
+    
     # 4. Update Top100 according to newst possibleTopUp
-    '''
+    
     updateTop100()
 
     # 5. Collect today's date's data for every top100 Up
@@ -471,5 +471,5 @@ if __name__ == "__main__":
     for up in upList:
         updateUpByDate(up, str(datetime.now()))
         #updateUpByDate(up, str(datetime.now() + timedelta(hours=15)))
-    '''
+    
     print(datetime.now())

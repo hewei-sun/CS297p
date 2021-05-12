@@ -1,0 +1,20 @@
+ * Serving Flask app "website" (lazy loading)
+ * Environment: production
+   WARNING: This is a development server. Do not use it in a production deployment.
+   Use a production WSGI server instead.
+ * Debug mode: on
+ * Running on http://0.0.0.0:1129/ (Press CTRL+C to quit)
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 267-829-722
+27.18.90.186 - - [12/May/2021 23:21:17] "[37mGET / HTTP/1.1[0m" 200 -
+27.18.90.186 - - [12/May/2021 23:21:17] "[37mGET /static/bootstrap/css/bootstrap/3.3.6/bootstrap.min.css HTTP/1.1[0m" 200 -
+27.18.90.186 - - [12/May/2021 23:21:17] "[37mGET /static/bootstrap/js/jquery/2.0.0/jquery.min.js HTTP/1.1[0m" 200 -
+27.18.90.186 - - [12/May/2021 23:21:17] "[37mGET /static/bootstrap-select/bootstrap-select.min.css HTTP/1.1[0m" 200 -
+27.18.90.186 - - [12/May/2021 23:21:17] "[37mGET /static/bootstrap-select/bootstrap-select.min.js HTTP/1.1[0m" 200 -
+27.18.90.186 - - [12/May/2021 23:21:17] "[37mGET /static/bootstrap/js/bootstrap/3.3.6/bootstrap.min.js HTTP/1.1[0m" 200 -
+27.18.90.186 - - [12/May/2021 23:21:17] "[37mGET /static/echarts/echarts.min.js HTTP/1.1[0m" 200 -
+27.18.90.186 - - [12/May/2021 23:21:23] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+27.18.90.186 - - [12/May/2021 23:22:10] "[37mGET / HTTP/1.1[0m" 200 -
+27.18.90.186 - - [12/May/2021 23:22:20] "[37mGET / HTTP/1.1[0m" 200 -
+27.18.90.186 - - [12/May/2021 23:22:24] "[37mGET /summary HTTP/1.1[0m" 200 -
