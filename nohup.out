@@ -1,6 +1,0 @@
-Traceback (most recent call last):
-  File "website.py", line 3, in <module>
-    from pyfiles.webUpRank import webUpRank
-  File "/www/wwwroot/www.lldszd.com/CS297p/pyfiles/webUpRank.py", line 4, in <module>
-    from CS297p.MysqlConnect import MysqlConnect
-ModuleNotFoundError: No module named 'CS297p'

@@ -5,6 +5,7 @@ from Video import Video
 import requests
 from Spider import Spider
 from collections import Counter
+from pyfiles.convert import img_deal
 
 user_agents='Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36'
 headers = {'user-agent': user_agents,
@@ -120,6 +121,10 @@ class Uploader:
             for item in dict['vlist']:
                 self.historyVideos.append(self.extract_videoInfo2(item))
             pgn += 1
+
+    def getFacePhoto():
+        # return type: cv2
+        return img_deal(faceURL)
 
 if __name__ == "__main__":
     # https: // space.bilibili.com / 5970160

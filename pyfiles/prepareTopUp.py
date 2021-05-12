@@ -249,16 +249,17 @@ def addFollowingbyID(up,headers,url_head,direction,n):
     print(f'You just visited {visited} from {up}\'s following list in {direction} order.\n')
     return missed
 
-def addFollowingToList():
+def addFollowingToList(upList=None):
     headers = {'referer':'',
                'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36 Edg/90.0.818.46',
                'cookie': "DedeUserID__ckMd5=2e697f52386d43f6; _uuid=EF2DAAED-E1B0-1B62-AC90-95FFE33A56CB71197infoc; fts=1531899601; buvid3=1FE86BE0-86E5-4443-9EAA-B4692C34CAB24610infoc; DedeUserID=7255947; blackside_state=1; rpdid=|(JY~|J)J|RY0J'ullYuuJmRR; CURRENT_FNVAL=80; LIVE_BUVID__ckMd5=97f1fede58a29dba; LIVE_BUVID=51c5671403d1ff3a3002f405d313a243; CURRENT_QUALITY=80; fingerprint=45bff20986aa4242239b29ed097fc9e9; buvid_fp=1FE86BE0-86E5-4443-9EAA-B4692C34CAB24610infoc; buvid_fp_plain=538F6B2F-C709-4EA9-B284-ACD021EF94AB18531infoc; SESSDATA=9c02010b%2C1628737703%2Cdfaa0%2A21; bili_jct=21e92ad75ec8725e7d1cde39f76d728e; sid=br04i46m; bp_video_offset_7255947=514515577167187812; bfe_id=1bad38f44e358ca77469025e0405c4a6; bp_t_offset_7255947=518631019120005148; PVID=2"
                }
 
-    
     mysqlconnect=MysqlConnect()
-    sql = "SELECT `ID`, `Followings` FROM `PossibleTopUp`"
-    upList = [(up, numFollowings) for (up,numFollowings,) in mysqlconnect.queryOutCome(sql)]
+    if not upList:
+        sql = "SELECT `ID`, `Followings` FROM `PossibleTopUp`"
+        upList = [(up, numFollowings) for (up,numFollowings,) in mysqlconnect.queryOutCome(sql)]
+    
     random.shuffle(upList)
     for up, numFollowings in upList:
     #for up, numFollowings in [(1540999,30)]:
@@ -293,7 +294,6 @@ def addFollowingToList():
                     f.write(str(up)+"\n")
         print('finished up ', up,'\n')
     print("finished all")
-
 
 # Add UPs whose followers exceeds FAN_LIMIT to the table PossibleTopUp
 FAN_LIMIT=1500000
@@ -420,27 +420,17 @@ def dropfirst():
         print(mysqlconnect.queryOutCome(sql))
 
 if __name__ == "__main__":
+
     print(datetime.now())
     #initialTop100('https://www.bilibili.com/read/cv10601513')
-    #checkTopUp('https://www.bilibili.com/read/cv11147845')
-    #print("done check")
     #updateTop100()
 
+    #checkTopUp('https://www.bilibili.com/read/cv11147845')
+    #print("done check")
     
-    # --------- Call below every day ----------------------
-    # 1. Refresh PossibleTopUp
+    # --------- Call below every day ---------------------- 
+    # 1. Add new ones into PossibleTopUP via TOP100's following list and today's video ranking
     
-    refreshUp = refreshPossibleTopUp()
-    if len(refreshUp) != 0:
-        with open("refreshMissed.txt", 'a+') as f:
-            for up in refreshUp:
-                f.write(str(up)+"\n")
-    
-    print('Refreshed PossibledTopUp')
-    #time.sleep(1800) # stop for 10 min
-    
-    # 2. Add new ones into PossibleTopUP via TOP100's following list and today's video ranking
-    '''
     rankUp = addPossibleUpFromRanking()
     if len(rankUp) != 0:
         with open("rankMissed.txt", 'a+') as f:
@@ -448,20 +438,32 @@ if __name__ == "__main__":
                 f.write(str(up)+"\n")
     
     print('Added PossibleTopUp from Hot Videos Rankings')
-    '''
+    
+    # 2. crawl up following and add to list
+
     time.sleep(600) # stop for 10 min
-    updateTop100()
     crawlUp = crawlUpFollowing()
     if len(crawlUp) != 0:
         with open("crawlMissed.txt", 'a+') as f:
             for up in crawlUp:
                 f.write(str(up)+"\n")
-    '''
+    addFollowingToList()
     print('Added PossibleTopUp from Following Lists')
-    # 3. Update Top100 according to newst possibleTopUp
+
+    # 3. Refresh PossibleTopUp
+    '''
+    refreshUp = refreshPossibleTopUp()
+    if len(refreshUp) != 0:
+        with open("refreshMissed.txt", 'a+') as f:
+            for up in refreshUp:
+                f.write(str(up)+"\n")
+    print('Refreshed PossibledTopUp')
+    '''
+    # 4. Update Top100 according to newst possibleTopUp
     '''
     updateTop100()
-    # 4. Collect today's date's data for every top100 Up
+
+    # 5. Collect today's date's data for every top100 Up
     mysqlconnect = MysqlConnect()
     sql = "SELECT `ID` from `PossibleTopUp`;"
     upList = [up for (up,) in mysqlconnect.queryOutCome(sql)]
@@ -469,7 +471,5 @@ if __name__ == "__main__":
     for up in upList:
         updateUpByDate(up, str(datetime.now()))
         #updateUpByDate(up, str(datetime.now() + timedelta(hours=15)))
-    
-    
-    #addFollowingToList()
+    '''
     print(datetime.now())

@@ -12,10 +12,22 @@ def uploaderRanking():
 @app.route('/uploaderRelation', methods = ['POST','GET'])
 def uploaderRelation():
     return render_template('uploaderRelationship.html')
-
+'''
 @app.route('/individualAnalysis', methods = ['POST','GET'])
 def individualAnalysis():
     return render_template('individualAnalysis.html')
+'''
+@app.route('/videoAnalysis', methods = ['POST','GET'])
+def videoAnalysis():
+    return render_template('individualAnalysis.html')
+
+@app.route('/uploaderAnalysis', methods = ['POST','GET'])
+def uploaderAnalysis():
+    return render_template('individualAnalysis.html')
+
+@app.route('/summary', methods = ['POST','GET'])
+def summary():
+    return render_template('summary.html')
 
 @app.route('/videoRanking', methods = ['POST','GET'])
 def videoRanking():
