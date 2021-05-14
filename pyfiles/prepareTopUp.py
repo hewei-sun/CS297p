@@ -183,6 +183,13 @@ def crawlFollowingsByID(up, headers, url_head, direction, n):
         for item in _json.get('data').get('list'):
             visited += 1
             mid = item['mid']
+
+            # ------- for following{up} --------------------
+            print(f'Adding {mid} into following{up}')
+            sql = '''INSERT IGNORE INTO `following{}` VALUES ({});'''.format(up, mid)
+            mysqlconnect.insertInfo(sql)
+
+            # ---------- for possibleTopUp ------------------
             sql = 'SELECT 1 FROM `PossibleTopUp` WHERE `ID`={};'.format(mid)
             if mysqlconnect.queryOutCome(sql):  # up existed, skip to the next one
                 continue
@@ -194,6 +201,8 @@ def crawlFollowingsByID(up, headers, url_head, direction, n):
             if numFollowers >= FAN_LIMIT:
                 ret = addOnePossibleUp(mid, numFollowings, numFollowers)
                 if ret: missed.append(ret)
+
+            # check whether exceeds n
             if visited >= n:
                 break
         else: # Continue if the inner loop wasn't broken.
@@ -203,97 +212,6 @@ def crawlFollowingsByID(up, headers, url_head, direction, n):
         break
     print(f'You just visited {visited} from {up}\'s following list in {direction} order.\n')
     return missed
-
-def addFollowingbyID(up,headers,url_head,direction,n):
-    
-    missed = []
-    visited=0
-    for i in range(1, 6):
-        url = url_head + f'pn={i}&ps=50&order={direction}&jsonp=jsonp'
-        print(url)
-        r = requests.session().get(url, headers=headers, timeout=5)
-        _json = r.json()
-        if _json['message'] == "用户已设置隐私，无法查看":
-            print('用户{}已设置隐私，无法查看'.format(up))
-            break
-        elif not _json['data']:
-            print('Failed of visiting page at {}'.format(url), '\n', r.text)
-            with open("listmissed", 'a+') as f:
-                for up in missed:
-                    f.write(str(up)+"\n")
-            break
-        elif not _json['data']['list']:
-            print('Empty Page {}'.format(url))
-            break
-        for item in _json.get('data').get('list'):
-            visited += 1
-            mid = item['mid']
-            mysqlconnect = MysqlConnect()
-            '''
-            numFollowings, numFollowers = getFollowersByID(mid)
-            if (numFollowers == numFollowings == 0):  # Failed to visit the F&F page
-                missed.append(mid)
-                continue
-            '''
-            #sql = '''INSERT INTO `following{}` VALUES ({}, {},{});'''.format(up, mid, numFollowings, numFollowers)
-            sql = '''INSERT INTO `following{}` VALUES ({});'''.format(up, mid)
-            mysqlconnect.insertInfo(sql)
-            #time.sleep(random.random() * 5)
-            if visited >= n:
-                break
-        else: # Continue if the inner loop wasn't broken.
-            time.sleep(random.random() * 10)
-            continue
-        # Inner loop was broken, break the outer.
-        break
-    print(f'You just visited {visited} from {up}\'s following list in {direction} order.\n')
-    return missed
-
-def addFollowingToList(upList=None):
-    headers = {'referer':'',
-               'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36 Edg/90.0.818.46',
-               'cookie': "DedeUserID__ckMd5=2e697f52386d43f6; _uuid=EF2DAAED-E1B0-1B62-AC90-95FFE33A56CB71197infoc; fts=1531899601; buvid3=1FE86BE0-86E5-4443-9EAA-B4692C34CAB24610infoc; DedeUserID=7255947; blackside_state=1; rpdid=|(JY~|J)J|RY0J'ullYuuJmRR; CURRENT_FNVAL=80; LIVE_BUVID__ckMd5=97f1fede58a29dba; LIVE_BUVID=51c5671403d1ff3a3002f405d313a243; CURRENT_QUALITY=80; fingerprint=45bff20986aa4242239b29ed097fc9e9; buvid_fp=1FE86BE0-86E5-4443-9EAA-B4692C34CAB24610infoc; buvid_fp_plain=538F6B2F-C709-4EA9-B284-ACD021EF94AB18531infoc; SESSDATA=9c02010b%2C1628737703%2Cdfaa0%2A21; bili_jct=21e92ad75ec8725e7d1cde39f76d728e; sid=br04i46m; bp_video_offset_7255947=514515577167187812; bfe_id=1bad38f44e358ca77469025e0405c4a6; bp_t_offset_7255947=518631019120005148; PVID=2"
-               }
-
-    mysqlconnect=MysqlConnect()
-    if not upList:
-        sql = "SELECT `ID`, `Followings` FROM `PossibleTopUp`"
-        upList = [(up, numFollowings) for (up,numFollowings,) in mysqlconnect.queryOutCome(sql)]
-    
-    random.shuffle(upList)
-    for up, numFollowings in upList:
-    #for up, numFollowings in [(1540999,30)]:
-        missed = []
-        headers['referer']='https://space.bilibili.com/{}/fans/follow'.format(up)
-        url_head = f'https://api.bilibili.com/x/relation/followings?vmid={up}&'
-
-        sql1 = f'SHOW TABLES LIKE \"following{up}\";' # In case we missed creating an individual table for some top100
-        tableExisted = mysqlconnect.queryOutCome(sql1)
-        numRows = 0
-        if tableExisted:   
-            todayFollowings, todayFollowers = getFollowersByID(up)
-            print(f"Up {up} has {numFollowings} followings yestoday and {todayFollowings} today.")
-            if todayFollowings-numFollowings>0: missed += addFollowingbyID(up, headers, url_head, 'desc', todayFollowings-numFollowings)
-
-        else: # This up's following list has not been fully crawled, need to do that
-            sql = '''CREATE TABLE IF NOT EXISTS `{}`
-                        (
-                            `ID` INT UNIQUE,
-                             PRIMARY KEY(ID)
-                        )ENGINE=innodb DEFAULT CHARSET=utf8;'''.format('following'+str(up))
-            mysqlconnect.queryOutCome(sql)
-            print(f'This is the first time to crawl Up {up}\'s following list.')
-            missed += addFollowingbyID(up, headers, url_head, 'asc', min(250, numFollowings))
-            numFollowings -= 250
-            if numFollowings > 0:  # crawl from the reverse direction but only took first `remaining` ones
-                missed += addFollowingbyID(up, headers, url_head, 'desc', min(250, numFollowings))
-        if len(missed) != 0:
-            filename = str(up)+"missed.txt"
-            with open(filename, 'a+') as f:
-                for up in missed:
-                    f.write(str(up)+"\n")
-        print('finished up ', up,'\n')
-    print("finished all")
 
 # Add UPs whose followers exceeds FAN_LIMIT to the table PossibleTopUp
 FAN_LIMIT=1500000
@@ -330,7 +248,6 @@ def crawlUpFollowing():
     upList = [(up, numFollowings) for (up,numFollowings,) in mysqlconnect.queryOutCome(sql)]
     random.shuffle(upList)
     for up, numFollowings in upList:
-    #for up, numFollowings in [(37090048,1251)]:
         headers['referer']='https://space.bilibili.com/{}/fans/follow'.format(up)
         url_head = f'https://api.bilibili.com/x/relation/followings?vmid={up}&'
 
@@ -341,17 +258,24 @@ def crawlUpFollowing():
             sql2 = f'SELECT COUNT(*) FROM Up{up};' # In case the Up is added to PossibleTop yesterday, we have not fully crawled his/her following list yet.
             (numRows,) = mysqlconnect.queryOutCome(sql2)[0]
 
+        todayFollowings, todayFollowers = getFollowersByID(up)
         if numRows>=2: # only crawl the new followings
             todayFollowings, todayFollowers = getFollowersByID(up)
             print(f"Up {up} has {numFollowings} followings yestoday and {todayFollowings} today.")
             if todayFollowings-numFollowings>0: missed += crawlFollowingsByID(up, headers, url_head, 'desc', todayFollowings-numFollowings)
 
         else: # This up's following list has not been fully crawled, need to do that
+            sql = '''CREATE TABLE IF NOT EXISTS `{}`
+                                    (
+                                        `ID` INT UNIQUE,
+                                         PRIMARY KEY(ID)
+                                    )ENGINE=innodb DEFAULT CHARSET=utf8;'''.format('following' + str(up))
+            mysqlconnect.queryOutCome(sql)
             print(f'This is the first time to crawl Up {up}\'s following list.')
-            missed += crawlFollowingsByID(up, headers, url_head, 'asc', min(250, numFollowings))
-            numFollowings -= 250
+            missed += crawlFollowingsByID(up, headers, url_head, 'asc', min(250, todayFollowings))
+            todayFollowings -= 250
             if numFollowings > 0:  # crawl from the reverse direction but only took first `remaining` ones
-                missed += crawlFollowingsByID(up, headers, url_head, 'desc', min(250, numFollowings))
+                missed += crawlFollowingsByID(up, headers, url_head, 'desc', min(250, todayFollowings))
 
         print('finished up ', up,'\n')
     print('Failed to crawl these Ups:', missed)
@@ -419,48 +343,67 @@ def dropfirst():
         sql = f"DELETE FROM `Up{up}` ORDER BY `Date` DESC LIMIT 1"
         print(mysqlconnect.queryOutCome(sql))
 
+def fixTimeLag():
+    mysqlconnect = MysqlConnect()
+    sql = 'SELECT table_name FROM information_schema.TABLES'
+    upList = [tb[2:] for (tb,) in mysqlconnect.queryOutCome(sql) if tb[0:2] == 'Up']
+    print(len(upList))
+    for up in upList:
+        sql = f"SELECT `Date` FROM `Up{up}` ORDER BY `Date` DESC LIMIT 1,1;"
+        old_date = mysqlconnect.queryOutCome(sql)[0][0]
+        print("old", old_date)
+        new_date = old_date + timedelta(hours=15)
+        print('new', new_date)
+        sql = f"UPDATE `Up{up}` SET `Date` = '{new_date}' WHERE `Date` = '{old_date}' "
+        print(mysqlconnect.queryOutCome(sql))
+
+
 if __name__ == "__main__":
 
     print(datetime.now())
-    #initialTop100('https://www.bilibili.com/read/cv10601513')
-    #updateTop100()
+    # initialTop100('https://www.bilibili.com/read/cv10601513')
+    # updateTop100()
 
-    #checkTopUp('https://www.bilibili.com/read/cv11147845')
-    #print("done check")
-    
-    # --------- Call below every day ---------------------- 
-    # 1. Add new ones into PossibleTopUP via TOP100's following list and today's video ranking
-    
-    rankUp = addPossibleUpFromRanking()
-    if len(rankUp) != 0:
-        with open("rankMissed.txt", 'a+') as f:
-            for up in rankUp:
-                f.write(str(up)+"\n")
-    
-    print('Added PossibleTopUp from Hot Videos Rankings')
-    
-    # 2. crawl up following and add to list
+    # checkTopUp('https://www.bilibili.com/read/cv11147845')
+    # print("done check")
 
-    time.sleep(600) # stop for 10 min
+    # --------- Call below every day ----------------------
+
+    # 1. crawl up following and add to list
     crawlUp = crawlUpFollowing()
     if len(crawlUp) != 0:
         with open("crawlMissed.txt", 'a+') as f:
             for up in crawlUp:
-                f.write(str(up)+"\n")
-    addFollowingToList()
-    print('Added PossibleTopUp from Following Lists')
+                f.write(str(up) + "\n")
+        print('------------You need to Repeat from Step 1.----------------')
+        exit()
+    print('Added PossibleTopUp from Following Lists.')
+
+    # 2. Add new ones into PossibleTopUP via TOP100's following list and today's video ranking
+    print("Cooling for 30 mins.")
+    time.sleep(1800)  # stop for 30 min
+    rankUp = addPossibleUpFromRanking()
+    if len(rankUp) != 0:
+        with open("rankMissed.txt", 'a+') as f:
+            for up in rankUp:
+                f.write(str(up) + "\n")
+        print('You need to Repeat from Step 2.')
+        exit()
+    print('Added PossibleTopUp from Hot Videos Rankings.')
 
     # 3. Refresh PossibleTopUp
-    
+    print("Cooling for 30 mins.")
+    time.sleep(1800)  # stop for 30 min
     refreshUp = refreshPossibleTopUp()
     if len(refreshUp) != 0:
         with open("refreshMissed.txt", 'a+') as f:
             for up in refreshUp:
-                f.write(str(up)+"\n")
-    print('Refreshed PossibledTopUp')
-    
+                f.write(str(up) + "\n")
+        print('You need to call recover() and then start from step 4.')
+        exit()
+    print('Refreshed PossibledTopUp.')
+
     # 4. Update Top100 according to newst possibleTopUp
-    
     updateTop100()
 
     # 5. Collect today's date's data for every top100 Up
@@ -470,6 +413,7 @@ if __name__ == "__main__":
     print(upList)
     for up in upList:
         updateUpByDate(up, str(datetime.now()))
-        #updateUpByDate(up, str(datetime.now() + timedelta(hours=15)))
-    
+        # updateUpByDate(up, str(datetime.now() + timedelta(hours=15)))
+
     print(datetime.now())
+
