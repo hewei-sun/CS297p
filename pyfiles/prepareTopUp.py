@@ -274,7 +274,7 @@ def crawlUpFollowing():
             print(f'This is the first time to crawl Up {up}\'s following list.')
             missed += crawlFollowingsByID(up, headers, url_head, 'asc', min(250, todayFollowings))
             todayFollowings -= 250
-            if numFollowings > 0:  # crawl from the reverse direction but only took first `remaining` ones
+            if todayFollowings > 0:  # crawl from the reverse direction but only took first `remaining` ones
                 missed += crawlFollowingsByID(up, headers, url_head, 'desc', min(250, todayFollowings))
 
         print('finished up ', up,'\n')
