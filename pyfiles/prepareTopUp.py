@@ -20,12 +20,18 @@ headers = {'user-agent': random.choice(user_agents),
                      "DedeUserID=19667955; DedeUserID__ckMd5=00a94d7f3200fdb4; sid=9b4dr68a; bsource=search_google; "
                      "PVID=1; bfe_id=6f285c892d9d3c1f8f020adad8bed553"
            }
-'''
+
 user_agents=['Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36 Edg/90.0.818.46']
 headers = {'user-agent': random.choice(user_agents),
            'referer': 'https://space.bilibili.com/562197/',
            'Cookie': "DedeUserID__ckMd5=2e697f52386d43f6; _uuid=EF2DAAED-E1B0-1B62-AC90-95FFE33A56CB71197infoc; fts=1531899601; buvid3=1FE86BE0-86E5-4443-9EAA-B4692C34CAB24610infoc; DedeUserID=7255947; blackside_state=1; rpdid=|(JY~|J)J|RY0J'ullYuuJmRR; CURRENT_FNVAL=80; LIVE_BUVID__ckMd5=97f1fede58a29dba; LIVE_BUVID=51c5671403d1ff3a3002f405d313a243; CURRENT_QUALITY=80; fingerprint=45bff20986aa4242239b29ed097fc9e9; buvid_fp=1FE86BE0-86E5-4443-9EAA-B4692C34CAB24610infoc; buvid_fp_plain=538F6B2F-C709-4EA9-B284-ACD021EF94AB18531infoc; SESSDATA=9c02010b%2C1628737703%2Cdfaa0%2A21; bili_jct=21e92ad75ec8725e7d1cde39f76d728e; sid=br04i46m; bp_video_offset_7255947=514515577167187812; bfe_id=1bad38f44e358ca77469025e0405c4a6; bp_t_offset_7255947=518631019120005148; PVID=1"
            }
+'''
+
+user_agents=['Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36 Edg/90.0.818.56']
+headers = {'user-agent': random.choice(user_agents),
+           'referer': 'https://space.bilibili.com/562197/',
+           'Cookie':"DedeUserID__ckMd5=2e697f52386d43f6; _uuid=EF2DAAED-E1B0-1B62-AC90-95FFE33A56CB71197infoc; fts=1531899601; buvid3=1FE86BE0-86E5-4443-9EAA-B4692C34CAB24610infoc; DedeUserID=7255947; blackside_state=1; rpdid=|(JY~|J)J|RY0J'ullYuuJmRR; CURRENT_FNVAL=80; LIVE_BUVID__ckMd5=97f1fede58a29dba; LIVE_BUVID=51c5671403d1ff3a3002f405d313a243; CURRENT_QUALITY=80; fingerprint=45bff20986aa4242239b29ed097fc9e9; buvid_fp=1FE86BE0-86E5-4443-9EAA-B4692C34CAB24610infoc; buvid_fp_plain=538F6B2F-C709-4EA9-B284-ACD021EF94AB18531infoc; SESSDATA=9c02010b%2C1628737703%2Cdfaa0%2A21; bili_jct=21e92ad75ec8725e7d1cde39f76d728e; sid=br04i46m; bp_video_offset_7255947=514515577167187812; bp_t_offset_7255947=524307801952423267; _dfcaptcha=df276be3f70fc51a9c7c15b154e33825; PVID=1; bfe_id=6f285c892d9d3c1f8f020adad8bed553"}
 
 def getFollowersByID(userID): # return numFollowings and numFollowers
     url = f'https://api.bilibili.com/x/relation/stat?vmid={userID}&jsonp=jsonp'
@@ -165,6 +171,8 @@ def crawlFollowingsByID(up, headers, url_head, direction, n):
     # crawl up's following list in `direction` order for `n` people.
     mysqlconnect = MysqlConnect()
     missed = []
+    status = True # record whose following list page have not been opened successfuly
+
     visited=0
     for i in range(1, 6):
         url = url_head + f'pn={i}&ps=50&order={direction}&jsonp=jsonp'
@@ -176,6 +184,8 @@ def crawlFollowingsByID(up, headers, url_head, direction, n):
             break
         elif not _json['data']:
             print('Failed of visiting page at {}'.format(url), '\n', r.text)
+            if up not in missed: missed.append(up)
+            status=False
             break
         elif not _json['data']['list']:
             print('Empty Page {}'.format(url))
@@ -201,7 +211,6 @@ def crawlFollowingsByID(up, headers, url_head, direction, n):
             if numFollowers >= FAN_LIMIT:
                 ret = addOnePossibleUp(mid, numFollowings, numFollowers)
                 if ret: missed.append(ret)
-
             # check whether exceeds n
             if visited >= n:
                 break
@@ -211,7 +220,7 @@ def crawlFollowingsByID(up, headers, url_head, direction, n):
         # Inner loop was broken, break the outer.
         break
     print(f'You just visited {visited} from {up}\'s following list in {direction} order.\n')
-    return missed
+    return missed, status
 
 # Add UPs whose followers exceeds FAN_LIMIT to the table PossibleTopUp
 FAN_LIMIT=1500000
@@ -236,18 +245,25 @@ def crawlUpFollowing():
                          "PVID=3; "
                          "bfe_id=603589b7ce5e180726bfa88808aa8947"
                }
-    '''
+
     headers = {'referer':'',
                'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36 Edg/90.0.818.46',
                'cookie': "DedeUserID__ckMd5=2e697f52386d43f6; _uuid=EF2DAAED-E1B0-1B62-AC90-95FFE33A56CB71197infoc; fts=1531899601; buvid3=1FE86BE0-86E5-4443-9EAA-B4692C34CAB24610infoc; DedeUserID=7255947; blackside_state=1; rpdid=|(JY~|J)J|RY0J'ullYuuJmRR; CURRENT_FNVAL=80; LIVE_BUVID__ckMd5=97f1fede58a29dba; LIVE_BUVID=51c5671403d1ff3a3002f405d313a243; CURRENT_QUALITY=80; fingerprint=45bff20986aa4242239b29ed097fc9e9; buvid_fp=1FE86BE0-86E5-4443-9EAA-B4692C34CAB24610infoc; buvid_fp_plain=538F6B2F-C709-4EA9-B284-ACD021EF94AB18531infoc; SESSDATA=9c02010b%2C1628737703%2Cdfaa0%2A21; bili_jct=21e92ad75ec8725e7d1cde39f76d728e; sid=br04i46m; bp_video_offset_7255947=514515577167187812; bfe_id=1bad38f44e358ca77469025e0405c4a6; bp_t_offset_7255947=518631019120005148; PVID=2"
                }
+    '''
+    headers = {'referer': '',
+               'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36 Edg/90.0.818.56',
+               'cookie': "DedeUserID__ckMd5=2e697f52386d43f6; _uuid=EF2DAAED-E1B0-1B62-AC90-95FFE33A56CB71197infoc; fts=1531899601; buvid3=1FE86BE0-86E5-4443-9EAA-B4692C34CAB24610infoc; DedeUserID=7255947; blackside_state=1; rpdid=|(JY~|J)J|RY0J'ullYuuJmRR; CURRENT_FNVAL=80; LIVE_BUVID__ckMd5=97f1fede58a29dba; LIVE_BUVID=51c5671403d1ff3a3002f405d313a243; CURRENT_QUALITY=80; fingerprint=45bff20986aa4242239b29ed097fc9e9; buvid_fp=1FE86BE0-86E5-4443-9EAA-B4692C34CAB24610infoc; buvid_fp_plain=538F6B2F-C709-4EA9-B284-ACD021EF94AB18531infoc; SESSDATA=9c02010b%2C1628737703%2Cdfaa0%2A21; bili_jct=21e92ad75ec8725e7d1cde39f76d728e; sid=br04i46m; bp_video_offset_7255947=514515577167187812; bp_t_offset_7255947=524307801952423267; _dfcaptcha=df276be3f70fc51a9c7c15b154e33825; PVID=1; bfe_id=6f285c892d9d3c1f8f020adad8bed553"
+               }
 
     missed = []
+    missed_add_following = []
     mysqlconnect=MysqlConnect()
     sql = "SELECT `ID`, `Followings` FROM `NewestTop100`"
     upList = [(up, numFollowings) for (up,numFollowings,) in mysqlconnect.queryOutCome(sql)]
     random.shuffle(upList)
     for up, numFollowings in upList:
+    #for up, numFollowings in [(258150656, 51)]:
         headers['referer']='https://space.bilibili.com/{}/fans/follow'.format(up)
         url_head = f'https://api.bilibili.com/x/relation/followings?vmid={up}&'
 
@@ -262,7 +278,10 @@ def crawlUpFollowing():
         if numRows>=2: # only crawl the new followings
             todayFollowings, todayFollowers = getFollowersByID(up)
             print(f"Up {up} has {numFollowings} followings yestoday and {todayFollowings} today.")
-            if todayFollowings-numFollowings>0: missed += crawlFollowingsByID(up, headers, url_head, 'desc', todayFollowings-numFollowings)
+            if todayFollowings-numFollowings>0:
+                tmp1, tmp2 = crawlFollowingsByID(up, headers, url_head, 'desc', todayFollowings-numFollowings)
+                missed += tmp1
+                if tmp2==False: missed_add_following.append(up)
 
         else: # This up's following list has not been fully crawled, need to do that
             sql = '''CREATE TABLE IF NOT EXISTS `{}`
@@ -272,14 +291,20 @@ def crawlUpFollowing():
                                     )ENGINE=innodb DEFAULT CHARSET=utf8;'''.format('following' + str(up))
             mysqlconnect.queryOutCome(sql)
             print(f'This is the first time to crawl Up {up}\'s following list.')
-            missed += crawlFollowingsByID(up, headers, url_head, 'asc', min(250, todayFollowings))
+            tmp1, tmp2 = crawlFollowingsByID(up, headers, url_head, 'desc', todayFollowings - numFollowings)
+            missed += tmp1
+            if tmp2 == False: missed_add_following.append(up)
+
             todayFollowings -= 250
             if todayFollowings > 0:  # crawl from the reverse direction but only took first `remaining` ones
-                missed += crawlFollowingsByID(up, headers, url_head, 'desc', min(250, todayFollowings))
+                tmp1, tmp2 = crawlFollowingsByID(up, headers, url_head, 'desc', todayFollowings - numFollowings)
+                missed += tmp1
+                if tmp2 == False: missed_add_following.append(up)
 
-        print('finished up ', up,'\n')
+    print('finished up ', up,'\n')
     print('Failed to crawl these Ups:', missed)
-    return missed
+    print('Failed to visit these Ups\' full following list page(s):', missed_add_following )
+    return missed, missed_add_following
 
 def updateTop100():
     mysqlconnect = MysqlConnect()
@@ -370,7 +395,13 @@ if __name__ == "__main__":
     # --------- Call below every day ----------------------
 
     # 1. crawl up following and add to list
-    crawlUp = crawlUpFollowing()
+    crawlUp, addUp = crawlUpFollowing()
+
+    if len(addUp) != 0:
+        with open("AddMissed.txt", 'a+') as f:
+            for up in addUp:
+                f.write(str(up) + "\n")
+
     if len(crawlUp) != 0:
         with open("crawlMissed.txt", 'a+') as f:
             for up in crawlUp:
