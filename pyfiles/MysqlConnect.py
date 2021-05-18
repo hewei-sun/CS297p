@@ -34,6 +34,7 @@ class MysqlConnect:  # Connect to MySQL
         cursor = db.cursor()
         cursor.execute("DROP TABLE IF EXISTS `PossibleTopUp`;")
         cursor.execute(table1)
+        cursor.close()
         db.close()
 
     def createTable2(self):
@@ -49,6 +50,7 @@ class MysqlConnect:  # Connect to MySQL
         cursor = db.cursor()
         cursor.execute("DROP TABLE IF EXISTS `NewestTop100`;")
         cursor.execute(table2)
+        cursor.close()
         db.close()
 
     def insertInfo(self, sql):
@@ -63,6 +65,7 @@ class MysqlConnect:  # Connect to MySQL
             db.rollback()
         finally:
             # Shutdown connect
+            cursor.close()
             db.close()
 
     def getInsertToTable1Sql(self, tableName, ID, numFollowings, numFollowers, nunmLikes, numViews):
@@ -91,5 +94,6 @@ class MysqlConnect:  # Connect to MySQL
             db.rollback()
         finally:
             # Shutdown connect
+            cursor.close()
             db.close()
         return result
