@@ -2,7 +2,7 @@ import requests
 import time, random
 from MysqlConnect import MysqlConnect
 from Spider import Spider
-from videoRankings import getURLFormBilibili
+from videoRankings import getURLFormBilibili, prepareAllRankings
 from datetime import datetime, timedelta
 from math import ceil
 '''
@@ -142,29 +142,32 @@ def addOnePossibleUp(mid, numFollowings, numFollowers):
     return None
 
 def addPossibleUpFromRanking():
-    urlDict = getURLFormBilibili()
-    mysqlconnect = MysqlConnect()
+    tables = ['all', 'guochuang', 'douga', 'music', 'dance', 'game', 'technology', 'digital', 'life', 'food', 'animal',
+              'kichiku', 'fashion', 'ent', 'cinephile', 'origin', 'rookie']
     missed = []
-    for field, url in urlDict.items():
-        print(f"Start Processing {field} Ranking")
-        spider = Spider(url, headers)
-        spider.setSoup()
-        itemList = spider.findTagByAttrs('li', {'class': 'rank-item'})
-        for itm in itemList:
-            mid = itm.find('div', {'class': 'detail'}).find('a').get('href')[len('//space.bilibili.com/'):]
-            sql = 'SELECT 1 FROM `PossibleTopUp` WHERE `ID`={};'.format(mid)
+    mysqlconnect = MysqlConnect()
+    random.shuffle(tables)
+    for table in tables:
+        sql = f'select `Up_ID` from `{table}`;'
+        upList = [item for (item,) in mysqlconnect.queryOutCome(sql)]
+        print('Start Check UP IDs from ',table,'.')
+        for up in upList:
+            if up is None:
+                continue
+            sql = 'SELECT 1 FROM `PossibleTopUp` WHERE `ID`={};'.format(up)
             if mysqlconnect.queryOutCome(sql):  # up existed
                 continue
-            numFollowings, numFollowers = getFollowersByID(mid)
+            numFollowings, numFollowers = getFollowersByID(up)
             if (numFollowers == numFollowings == 0):  # Failed to visit the F&F page
-                missed.append(mid)
+                missed.append(up)
                 continue
             time.sleep(random.random() * 5)
             if numFollowers >= FAN_LIMIT:
-                print("catched one:", mid, numFollowers)
-                ret = addOnePossibleUp(mid, numFollowings, numFollowers)
+                print("catched one:", up, numFollowers)
+                ret = addOnePossibleUp(up, numFollowings, numFollowers)
                 if ret: missed.append(ret)
             time.sleep(random.random() * 10)
+        time.sleep(random.random() * 60)
     return missed
 
 def crawlFollowingsByID(up, headers, url_head, direction, n):
@@ -382,6 +385,12 @@ def fixTimeLag():
         sql = f"UPDATE `Up{up}` SET `Date` = '{new_date}' WHERE `Date` = '{old_date}' "
         print(mysqlconnect.queryOutCome(sql))
 
+def fixPartialUp():
+    mysqlconnect = MysqlConnect()
+    sql = 'SELECT table_name FROM information_schema.TABLES'
+    upList = [tb[2:] for (tb,) in mysqlconnect.queryOutCome(sql) if tb[0:2] == 'Up']
+    for up in upList:
+        sql = f"SELECT FROM `Up{up}` ORDER BY `Date` DESC LIMIT 1"
 
 if __name__ == "__main__":
 
@@ -392,6 +401,7 @@ if __name__ == "__main__":
     # checkTopUp('https://www.bilibili.com/read/cv11147845')
     # print("done check")
 
+    '''
     # --------- Call below every day ----------------------
 
     # 1. crawl up following and add to list
@@ -409,10 +419,17 @@ if __name__ == "__main__":
         print('------------You need to Repeat from Step 1.----------------')
         exit()
     print('Added PossibleTopUp from Following Lists.')
-
-    # 2. Add new ones into PossibleTopUP via TOP100's following list and today's video ranking
+    
+    # 2. Crawl Today's videos rankings
+    print("Cooling for 10 mins.")
+    time.sleep(600)  # stop for 10 min
+    prepareAllRankings()
+    print("Saved Hot Videos Ranks")
+    
+    # 3. Add new ones into PossibleTopUP via TOP100's following list and today's video ranking
     print("Cooling for 30 mins.")
     time.sleep(1800)  # stop for 30 min
+    '''
     rankUp = addPossibleUpFromRanking()
     if len(rankUp) != 0:
         with open("rankMissed.txt", 'a+') as f:
@@ -422,7 +439,8 @@ if __name__ == "__main__":
         exit()
     print('Added PossibleTopUp from Hot Videos Rankings.')
 
-    # 3. Refresh PossibleTopUp
+    '''
+    # 4. Refresh PossibleTopUp
     print("Cooling for 30 mins.")
     time.sleep(1800)  # stop for 30 min
     refreshUp = refreshPossibleTopUp()
@@ -434,10 +452,10 @@ if __name__ == "__main__":
         exit()
     print('Refreshed PossibledTopUp.')
 
-    # 4. Update Top100 according to newst possibleTopUp
+    # 5. Update Top100 according to newst possibleTopUp
     updateTop100()
 
-    # 5. Collect today's date's data for every top100 Up
+    # 6. Collect today's date's data for every top100 Up
     mysqlconnect = MysqlConnect()
     sql = "SELECT `ID` from `PossibleTopUp`;"
     upList = [up for (up,) in mysqlconnect.queryOutCome(sql)]
@@ -445,6 +463,6 @@ if __name__ == "__main__":
     for up in upList:
         updateUpByDate(up, str(datetime.now()))
         # updateUpByDate(up, str(datetime.now() + timedelta(hours=15)))
-
+    '''
     print(datetime.now())
 
