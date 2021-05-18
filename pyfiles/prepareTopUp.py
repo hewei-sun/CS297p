@@ -143,7 +143,7 @@ def addOnePossibleUp(mid, numFollowings, numFollowers):
 
 def addPossibleUpFromRanking():
     tables = ['all', 'guochuang', 'douga', 'music', 'dance', 'game', 'technology', 'digital', 'car', 'life', 'food', 'animal',
-              'kichiku', 'fashion', 'ent', 'cinephile', 'origin', 'rookie']
+             'kichiku', 'fashion', 'ent', 'cinephile', 'origin', 'rookie']
     missed = []
     mysqlconnect = MysqlConnect()
     random.shuffle(tables)
@@ -162,12 +162,13 @@ def addPossibleUpFromRanking():
             if (numFollowers == numFollowings == 0):  # Failed to visit the F&F page
                 missed.append(up)
                 continue
-            time.sleep(random.random() * 10)
+            time.sleep(random.random() * 5)
             if numFollowers >= FAN_LIMIT:
                 print("catched one:", up, numFollowers)
                 ret = addOnePossibleUp(up, numFollowings, numFollowers)
                 if ret: missed.append(ret)
                 time.sleep(random.random() * 10)
+        time.sleep(random.random() * 10)
     return missed
 
 def crawlFollowingsByID(up, headers, url_head, direction, n):
@@ -357,7 +358,7 @@ def dropAll():
 def recover():
     # If dropped the PossibleTopUp by accidently, use below code
     mysqlconnect = MysqlConnect()
-    sql = 'SELECT table_name FROM information_schema.TABLES'
+    sql = 'SELECT table_name FROM information_schema.TABLES;'
     upList = [tb[2:] for (tb,) in mysqlconnect.queryOutCome(sql) if tb[0:2]=='Up']
     refreshPossibleTopUp(upList)
 
@@ -368,7 +369,7 @@ def dropfirst():
     upList = [tb[2:] for (tb,) in mysqlconnect.queryOutCome(sql) if tb[0:2] == 'Up']
     print(upList)
     for up in upList:
-        sql = f"DELETE FROM `Up{up}` ORDER BY `Date` DESC LIMIT 1"
+        sql = f"DELETE FROM `Up{up}` ORDER BY `Date` DESC LIMIT 1;"
         print(mysqlconnect.queryOutCome(sql))
 
 def fixTimeLag():
@@ -382,7 +383,7 @@ def fixTimeLag():
         print("old", old_date)
         new_date = old_date + timedelta(hours=15)
         print('new', new_date)
-        sql = f"UPDATE `Up{up}` SET `Date` = '{new_date}' WHERE `Date` = '{old_date}' "
+        sql = f"UPDATE `Up{up}` SET `Date` = '{new_date}' WHERE `Date` = '{old_date}';"
         print(mysqlconnect.queryOutCome(sql))
 
 def fixPartialUp():
@@ -390,7 +391,7 @@ def fixPartialUp():
     sql = 'SELECT table_name FROM information_schema.TABLES'
     upList = [tb[2:] for (tb,) in mysqlconnect.queryOutCome(sql) if tb[0:2] == 'Up']
     for up in upList:
-        sql = f"SELECT FROM `Up{up}` ORDER BY `Date` DESC LIMIT 1"
+        sql = f"SELECT FROM `Up{up}` ORDER BY `Date` DESC LIMIT 1;"
 
 if __name__ == "__main__":
 
@@ -401,7 +402,6 @@ if __name__ == "__main__":
     # checkTopUp('https://www.bilibili.com/read/cv11147845')
     # print("done check")
 
-    '''
     # --------- Call below every day ----------------------
 
     # 1. crawl up following and add to list
@@ -428,17 +428,15 @@ if __name__ == "__main__":
     # 3. Add new ones into PossibleTopUP via today's video ranking
     print("Cooling for 20 mins.")
     time.sleep(1200)  # stop for 10 min
-    '''
     rankUp = addPossibleUpFromRanking()
     if len(rankUp) != 0:
         with open("rankMissed.txt", 'a+') as f:
             for up in rankUp:
                 f.write(str(up) + "\n")
-        print('You need to Repeat from Step 2.')
+        print('------------You need to Repeat from Step 3.----------------')
         exit()
     print('Added PossibleTopUp from Hot Videos Rankings.')
-
-    '''
+    
     # 4. Refresh PossibleTopUp
     print("Cooling for 30 mins.")
     time.sleep(1800)  # stop for 30 min
@@ -447,7 +445,7 @@ if __name__ == "__main__":
         with open("refreshMissed.txt", 'a+') as f:
             for up in refreshUp:
                 f.write(str(up) + "\n")
-        print('You need to call recover() and then start from step 4.')
+        print('----------------You need to call recover() and then start from step 5.----------------')
         exit()
     print('Refreshed PossibledTopUp.')
 
@@ -460,8 +458,8 @@ if __name__ == "__main__":
     upList = [up for (up,) in mysqlconnect.queryOutCome(sql)]
     print(upList)
     for up in upList:
-        #updateUpByDate(up, str(datetime.now()))
-        updateUpByDate(up, str(datetime.now() + timedelta(hours=15)))
-    '''
+        updateUpByDate(up, str(datetime.now()))
+        #updateUpByDate(up, str(datetime.now() + timedelta(hours=15)))
+        
     print(datetime.now())
 
