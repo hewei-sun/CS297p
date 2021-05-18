@@ -1,5 +1,7 @@
 from Video import Video
 from Spider import Spider
+from MysqlConnect import MysqlConnect
+import time, random
 import re
 
 user_agents='Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36'
@@ -15,19 +17,17 @@ def delEmojis(text): # delete emojis in the given text, used for title of video
            "]+", flags=re.UNICODE)
     return emoji_pattern.sub(r' ', text)
 
-def getRanking(url):  # Crawl a single ranking page
+def getRanking(field, url):  # Crawl a single ranking page
     spider = Spider(url,headers)
     spider.setSoup()
     itemList = spider.findTagByAttrs('li', {'class':'rank-item'})
     videosList = []
     for itm in itemList:
-        rank = itm.find('div', {'class': 'num'}).text
         v = Video()
         v.bvid = itm.find('a', {'class': 'title'}).get('href')[len('//www.bilibili.com/video/'):]
-        v.rank = rank
-        v.start_crawlling()
-        v.get_cover()
-        '''
+        v.rank = int(itm.find('div', {'class': 'num'}).text)
+        #v.start_crawlling(True) # true for telling crawller to only crawl needed info for present video in rankings
+
         v.title = delEmojis(itm.find('a', {'class': 'title'}).text)
         v.score = itm.find('div', {'class': 'pts'}).find('div').text
         dataBox = itm.find('div', {'class': 'detail'}).find_all('span')
@@ -35,8 +35,12 @@ def getRanking(url):  # Crawl a single ranking page
         v.view = dataBox[1].text.strip()  # 弹幕
         v.up_name = dataBox[2].text.strip()
         v.up_id = itm.find('div', {'class': 'detail'}).find('a').get('href')[len('//space.bilibili.com/'):]
-        '''
+        #v.cover_url = v.get_cover()
+
+        insertToTable(field, v.rank, v.title, v.bvid, v.play, v.view, v.up_name, v.up_id, v.cover_url)
         videosList.append(v)
+
+        time.sleep(random.random() * 5)
     return videosList
 
 def getURLFormBilibili():
@@ -74,19 +78,51 @@ def prepareAllRankings():
     rankings = {}
     urlDict = getURLFormBilibili()
     for field, url in urlDict.items():
-        print("Processing `" + field + "` Ranking...")
-        rankings[field] = getRanking(url)
-        printRankings(rankings[field])
+        prepareOneRanking(field)
+        time.sleep(random.random() * 60)
     return rankings
 
-def prepareOneRanking(field):
-    print("Processing `" + field + "` Ranking...")
-    url = 'https://www.bilibili.com/v/popular/rank/{}'.format(field)
-    print(url)
-    ret = getRanking(url)
-    printRankings(ret)
-    return ret
+def creatTable(field):
+    mysqlconnect = MysqlConnect()
+    sql = f"DROP TABLE IF EXISTS `{field}`;"
+    mysqlconnect.queryOutCome(sql)
+    sql = f'''CREATE TABLE `{field}`
+            (
+                `Rank` INT UNIQUE,
+                `Title` VARCHAR(200),
+                `BVid` VARCHAR(50) UNIQUE, 
+                `Play` VARCHAR(50),
+                `View` VARCHAR(50),
+                `Up` VARCHAR(50),
+                `Up_ID` INT,
+                `Cover_URL` VARCHAR(200),
+                 PRIMARY KEY(BVid)
+            )ENGINE=innodb DEFAULT CHARSET=utf8;'''
+    mysqlconnect.queryOutCome(sql)
 
+
+def insertToTable(field, rank, title, bvid, play, view, up_name, up_id, cover_url):
+    title = delEmojis(title)
+    temp = [("'",r"\'"),('"',r'\"')]
+    for old, new in temp:
+        title = title.replace(old, new)
+        up_name = up_name.replace(old, new)
+
+    sql = '''
+            INSERT IGNORE INTO `{}` VALUES ({}, \'{}\', \'{}\', \'{}\', \'{}\', \'{}\', \'{}\', \'{}\');
+          '''.format(field, rank, title, bvid, play, view, up_name, up_id, cover_url)
+    print(sql)
+    mysqlconnect = MysqlConnect()
+    mysqlconnect.queryOutCome(sql)
+    return
+
+def prepareOneRanking(field):
+    url = 'https://www.bilibili.com/v/popular/rank/{}'.format(field)
+    print("Processing `",field,"` Ranking... at ",url)
+    creatTable(field)
+    ret = getRanking(field, url)
+    #printRankings(ret)
+    return ret
 
 def printRankings(rank):
     str = ''
@@ -96,30 +132,12 @@ def printRankings(rank):
     return str
 
 if __name__ == "__main__":
-    #rankings = prepareAllRankings()
-    rank = prepareOneRanking('guochuang')
-    '''
-    for key, rank in rankings.items():
-        print("Recent Trend of TOP1 video in " + key)
-        v = rank[0]
-        v.generate_wordscloud_1()
-        v.generate_wordscloud_2()
-    '''
+    #prepareAllRankings()
+    #prepareOneRanking('guochuang')
+    #fields = ['all', 'guochuang', 'douga', 'music', 'dance', 'game', 'technology', 'digital', 'life', 'food', 'animal',
+    # 'kichiku', 'fashion', 'ent', 'cinephile', 'origin', 'rookie']
+    fields = ['kichiku', 'ent']
+    for f in fields:
+        prepareOneRanking(f)
+    # music， kichiku， ent
 
-    '''
-    # 原先写进mysql的code如下,感觉用不到，就comment掉了。
-    urlDict = getURLFormBilibili()
-    mysqlconnect = MysqlConnect()
-
-    for field, url in urlDict.items():
-        print("Processing `" + field + "` Ranking...")
-        createsql = mysqlconnect.getCreateTableSql(field)
-        mysqlconnect.createTable(field, createsql)
-        videosList = getRanking(url)
-        for video in videosList:
-            info = video.get_info()
-            # print(info)
-            insertsql = mysqlconnect.getInsertToTableSql(field, info[0], info[1], info[2], info[3], info[4],
-                                                         info[5], info[6], info[7])
-            mysqlconnect.insertInfo(insertsql)
-    '''

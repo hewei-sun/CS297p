@@ -15,16 +15,16 @@ headers = {'user-agent': user_agents,
            'referer': ''}
 
 class Video:
-    def __init__(self, rank=None, title=None, bv=None, score=None, play=None, view=None, up_name=None, up_id=None, cover_url=None):
-        self.rank = rank
-        self.title = title
-        self.bvid = bv
-        self.score = score
-        self.play = play
-        self.view = view # danmu
-        self.up_name = up_name
-        self.up_id = up_id
-        self.cover_url = cover_url
+    def __init__(self):
+        self.rank = None
+        self.title = None
+        self.bvid = None
+        #self.score = None
+        self.play = None
+        self.view = None # danmu
+        self.up_name = None
+        self.up_id = None
+        self.cover_url = None
 
         # below attributes will be collected from ways other than ranking crawling
         self.description = None
@@ -49,37 +49,71 @@ class Video:
         url = f'https://www.bilibili.com/video/{self.bvid}'
         spider = Spider(url, headers)
         spider.setSoup()
+        if spider.soup.find('div', {'id': 'app', 'class': 'main-container clearfix'}):
+            self.cover_url = spider.soup.find('meta', {'property': 'og:image'}).get('content')
+            return
         cover_url = spider.soup.find('meta', {'itemprop': 'image'}).get('content')
         return cover_url
 
-    def start_crawlling(self):
+    def start_crawlling(self, for_rank=False):
         if not self.bvid:
             print("No BVid Given Yet.")
             return
+        if self.bvid[0:2] != 'BV':  # 官方番剧/动画
+            url = f'https://www.bilibili.com/bangumi/play/{self.bvid}'
+            print(url)
+            headers['referer'] = url
+            spider = Spider(url, headers)
+            spider.setSoup()
+            self.title = spider.soup.find('title').text
+            if not for_rank: self.description = spider.soup.find('meta', {'name':'description'}).get('content')
+            self.up_name = spider.soup.find('meta', {'name':'author'}).get('content')
+            self.cover_url = spider.soup.find('meta', {'property':'og:image'}).get('content')
+            return
+
         url = f'https://www.bilibili.com/video/{self.bvid}'
+        print(url)
         headers['referer'] = url
         spider = Spider(url, headers)
         spider.setSoup()
+
+        if spider.soup.find('div', {'id':'app', 'class':'main-container clearfix'}):
+            self.title = spider.soup.find('title').text
+            if not for_rank: self.description = spider.soup.find('meta', {'name': 'description'}).get('content')
+            self.up_name = spider.soup.find('meta', {'name': 'author'}).get('content')
+            self.cover_url = spider.soup.find('meta', {'property': 'og:image'}).get('content')
+            return
+
+        self.description = spider.soup.find('meta',{'itemprop':'description'}).get('content')
         statistics = spider.soup.find('div',{'id':'viewbox_report'}).find_all('span')
         self.title = statistics[0].text
-        self.play = statistics[1].text
-        self.view = statistics[2].text
-        self.publish_time = statistics[3].text
-        if len(statistics)>4 and self.rank==None: # the video has a history rank
+        self.play = statistics[1].text[:-5]
+        self.view = statistics[2].text[:-2]
+        if not for_rank: self.publish_time = statistics[3].text
+        if len(statistics)>4 and not for_rank: # the video has a history rank
             self.rank = statistics[4].text.strip()
-        statistics = spider.soup.find('div',{'class':'up-info_right'}).find('a',{'class':'username'})
-        self.up_id = statistics.get('href')[len('//space.bilibili.com/'):]
-        self.up_name = statistics.text.strip()
-        self.cover_url = self.get_cover()
+        # 独立作者 or 协作团队
+        single_up = spider.soup.find('div',{'class':'up-info_right'})
+        if single_up:
+            up = single_up.find('a',{'class':'username'})
+            self.up_id = up.get('href')[len('//space.bilibili.com/'):]
+            self.up_name = up.text.strip()
+        else:
+            team = spider.soup.find('div',{'class':'members-info__container'})
+            if team:
+                up = team.find_all('div',{'class':'avatar-name__container'})[0].find('a')
+                self.up_id = up.get('href')[len('//space.bilibili.com/'):]
+                self.up_name = up.text.strip()
 
-        self.like = spider.soup.find('span',{'class':'like'}).text.strip()  # 点赞
-        self.coin = spider.soup.find('span',{'class':'coin'}).text.strip()  # 币
-        self.collect = spider.soup.find('span',{'class':'collect'}).text.strip()  # 收藏
-        self.share = spider.soup.find('span',{'class':'share'}).text.strip()  # 转发
+        self.cover_url = spider.soup.find('meta', {'itemprop': 'image'}).get('content')
 
-        for item in spider.soup.find_all('li', {'class':'tag'}):
-            self.tags.append(item.text.strip())
-
+        if not for_rank:
+            self.like = spider.soup.find('span',{'class':'like'}).text.strip()  # 点赞
+            self.coin = spider.soup.find('span',{'class':'coin'}).text.strip()  # 币
+            self.collect = spider.soup.find('span',{'class':'collect'}).text.strip()  # 收藏
+            self.share = spider.soup.find('span',{'class':'share'}).text.strip()  # 转发
+            for item in spider.soup.find_all('li', {'class':'tag'}):
+                self.tags.append(item.text.strip())
 
     def get_cid(self):
         url = 'https://api.bilibili.com/x/web-interface/view?bvid={}'.format(self.bvid)
@@ -186,7 +220,7 @@ class Video:
             self.video_title = video_title[0].split('_哔哩哔哩')[0]
         return aim_oid
 
-    def comments_parse(self, max=None):
+    def comments_parse(self, hot_num = None, max=None):
         oid = self.get_oid(f'https://www.bilibili.com/video/{self.bvid}')
         n = 1
         i = 0
@@ -238,12 +272,12 @@ class Video:
 
 if __name__ == "__main__":
     v = Video()
-    v.bvid = 'BV1vy4y1s7CY'
+    v.bvid = 'BV1V5411u7yy'
     v.start_crawlling()
     v.printInfo()
-    v.comments_parse(50).to_csv('comments.csv')
-    #v.generate_wordscloud_1()
-    #v.generate_wordscloud_2()
+    #v.comments_parse(50).to_csv('comments.csv')
+    v.generate_wordscloud_1()
+    v.generate_wordscloud_2()
 
 
 
