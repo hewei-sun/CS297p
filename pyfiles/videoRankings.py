@@ -107,7 +107,6 @@ def insertToTable(field, rank, title, bvid, play, view, up_name, up_id, cover_ur
     for old, new in temp:
         title = title.replace(old, new)
         up_name = up_name.replace(old, new)
-
     sql = '''
             INSERT IGNORE INTO `{}` VALUES ({}, \'{}\', \'{}\', \'{}\', \'{}\', \'{}\', \'{}\', \'{}\');
           '''.format(field, rank, title, bvid, play, view, up_name, up_id, cover_url)
@@ -133,7 +132,6 @@ def printRankings(rank):
 
 if __name__ == "__main__":
     prepareAllRankings()
-    #prepareOneRanking('guochuang')
     #fields = ['all', 'guochuang', 'douga', 'music', 'dance', 'game', 'technology', 'digital', 'car', 'life', 'food', 'animal',
               #'kichiku', 'fashion', 'ent', 'cinephile', 'origin', 'rookie']
 
