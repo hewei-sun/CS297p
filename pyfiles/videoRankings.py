@@ -56,6 +56,7 @@ def getURLFormBilibili():
         'game':'游戏',
         'technology':'知识',
         'digital':'数码',
+        'car':'汽车',
         'life':'生活',
         'food':'美食',
         'animal':'动物圈',
@@ -79,7 +80,6 @@ def prepareAllRankings():
     urlDict = getURLFormBilibili()
     for field, url in urlDict.items():
         prepareOneRanking(field)
-        time.sleep(random.random() * 60)
     return rankings
 
 def creatTable(field):
@@ -132,12 +132,8 @@ def printRankings(rank):
     return str
 
 if __name__ == "__main__":
-    #prepareAllRankings()
+    prepareAllRankings()
     #prepareOneRanking('guochuang')
-    #fields = ['all', 'guochuang', 'douga', 'music', 'dance', 'game', 'technology', 'digital', 'life', 'food', 'animal',
-    # 'kichiku', 'fashion', 'ent', 'cinephile', 'origin', 'rookie']
-    fields = ['kichiku', 'ent']
-    for f in fields:
-        prepareOneRanking(f)
-    # music， kichiku， ent
+    #fields = ['all', 'guochuang', 'douga', 'music', 'dance', 'game', 'technology', 'digital', 'car', 'life', 'food', 'animal',
+              #'kichiku', 'fashion', 'ent', 'cinephile', 'origin', 'rookie']
 
