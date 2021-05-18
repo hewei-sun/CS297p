@@ -142,7 +142,7 @@ def addOnePossibleUp(mid, numFollowings, numFollowers):
     return None
 
 def addPossibleUpFromRanking():
-    tables = ['all', 'guochuang', 'douga', 'music', 'dance', 'game', 'technology', 'digital', 'life', 'food', 'animal',
+    tables = ['all', 'guochuang', 'douga', 'music', 'dance', 'game', 'technology', 'digital', 'car', 'life', 'food', 'animal',
               'kichiku', 'fashion', 'ent', 'cinephile', 'origin', 'rookie']
     missed = []
     mysqlconnect = MysqlConnect()
@@ -151,8 +151,9 @@ def addPossibleUpFromRanking():
         sql = f'select `Up_ID` from `{table}`;'
         upList = [item for (item,) in mysqlconnect.queryOutCome(sql)]
         print('Start Check UP IDs from ',table,'.')
+        random.shuffle(upList)
         for up in upList:
-            if up is None:
+            if up==0:
                 continue
             sql = 'SELECT 1 FROM `PossibleTopUp` WHERE `ID`={};'.format(up)
             if mysqlconnect.queryOutCome(sql):  # up existed
@@ -161,13 +162,12 @@ def addPossibleUpFromRanking():
             if (numFollowers == numFollowings == 0):  # Failed to visit the F&F page
                 missed.append(up)
                 continue
-            time.sleep(random.random() * 5)
+            time.sleep(random.random() * 10)
             if numFollowers >= FAN_LIMIT:
                 print("catched one:", up, numFollowers)
                 ret = addOnePossibleUp(up, numFollowings, numFollowers)
                 if ret: missed.append(ret)
-            time.sleep(random.random() * 10)
-        time.sleep(random.random() * 60)
+                time.sleep(random.random() * 10)
     return missed
 
 def crawlFollowingsByID(up, headers, url_head, direction, n):
@@ -406,7 +406,6 @@ if __name__ == "__main__":
 
     # 1. crawl up following and add to list
     crawlUp, addUp = crawlUpFollowing()
-
     if len(addUp) != 0:
         with open("AddMissed.txt", 'a+') as f:
             for up in addUp:
@@ -420,15 +419,15 @@ if __name__ == "__main__":
         exit()
     print('Added PossibleTopUp from Following Lists.')
     
-    # 2. Crawl Today's videos rankings
+    # 2. Crawl Today's videos rankings and save them into database
     print("Cooling for 10 mins.")
     time.sleep(600)  # stop for 10 min
     prepareAllRankings()
     print("Saved Hot Videos Ranks")
     
-    # 3. Add new ones into PossibleTopUP via TOP100's following list and today's video ranking
-    print("Cooling for 30 mins.")
-    time.sleep(1800)  # stop for 30 min
+    # 3. Add new ones into PossibleTopUP via today's video ranking
+    print("Cooling for 20 mins.")
+    time.sleep(1200)  # stop for 10 min
     '''
     rankUp = addPossibleUpFromRanking()
     if len(rankUp) != 0:
@@ -461,8 +460,8 @@ if __name__ == "__main__":
     upList = [up for (up,) in mysqlconnect.queryOutCome(sql)]
     print(upList)
     for up in upList:
-        updateUpByDate(up, str(datetime.now()))
-        # updateUpByDate(up, str(datetime.now() + timedelta(hours=15)))
+        #updateUpByDate(up, str(datetime.now()))
+        updateUpByDate(up, str(datetime.now() + timedelta(hours=15)))
     '''
     print(datetime.now())
 
