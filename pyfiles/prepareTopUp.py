@@ -142,8 +142,9 @@ def addOnePossibleUp(mid, numFollowings, numFollowers):
     return None
 
 def addPossibleUpFromRanking():
-    tables = ['all', 'guochuang', 'douga', 'music', 'dance', 'game', 'technology', 'digital', 'car', 'life', 'food', 'animal',
-             'kichiku', 'fashion', 'ent', 'cinephile', 'origin', 'rookie']
+    #tables = ['all', 'guochuang', 'douga', 'music', 'dance', 'game', 'technology', 'digital', 'car', 'life', 'food', 'animal',
+             #'kichiku', 'fashion', 'ent', 'cinephile', 'origin', 'rookie']
+    tables = ['kichiku', 'rookie']
     missed = []
     mysqlconnect = MysqlConnect()
     random.shuffle(tables)
@@ -420,14 +421,14 @@ if __name__ == "__main__":
     print('Added PossibleTopUp from Following Lists.')
     
     # 2. Crawl Today's videos rankings and save them into database
-    print("Cooling for 10 mins.")
-    time.sleep(600)  # stop for 10 min
+    print("Cooling for 30 mins.")
+    time.sleep(1800)  # stop for 30 min
     prepareAllRankings()
     print("Saved Hot Videos Ranks")
     
     # 3. Add new ones into PossibleTopUP via today's video ranking
-    print("Cooling for 20 mins.")
-    time.sleep(1200)  # stop for 10 min
+    print("Cooling for 30 mins.")
+    time.sleep(1800)  # stop for 30 min
     rankUp = addPossibleUpFromRanking()
     if len(rankUp) != 0:
         with open("rankMissed.txt", 'a+') as f:
@@ -436,7 +437,7 @@ if __name__ == "__main__":
         print('------------You need to Repeat from Step 3.----------------')
         exit()
     print('Added PossibleTopUp from Hot Videos Rankings.')
-    
+
     # 4. Refresh PossibleTopUp
     print("Cooling for 30 mins.")
     time.sleep(1800)  # stop for 30 min
@@ -458,8 +459,8 @@ if __name__ == "__main__":
     upList = [up for (up,) in mysqlconnect.queryOutCome(sql)]
     print(upList)
     for up in upList:
-        updateUpByDate(up, str(datetime.now()))
-        #updateUpByDate(up, str(datetime.now() + timedelta(hours=15)))
-        
+        #updateUpByDate(up, str(datetime.now()))
+        updateUpByDate(up, str(datetime.now() + timedelta(hours=15)))
+
     print(datetime.now())
 
