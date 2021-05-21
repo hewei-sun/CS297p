@@ -8,7 +8,8 @@ import pandas as pd
 import json
 import time, random
 from pandas import Series, DataFrame
-from Spider import Spider
+from pyfiles.Spider import Spider
+from pyfiles.WEBconvert import cover_deal
 
 user_agents='Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36'
 headers = {'user-agent': user_agents,
@@ -53,6 +54,7 @@ class Video:
             self.cover_url = spider.soup.find('meta', {'property': 'og:image'}).get('content')
             return
         cover_url = spider.soup.find('meta', {'itemprop': 'image'}).get('content')
+        cover_deal(cover_url, 'static/videoFaces/' + self.bvid + '.png')
         return cover_url
 
     def start_crawlling(self, for_rank=False):
