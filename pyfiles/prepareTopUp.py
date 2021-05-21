@@ -1,9 +1,10 @@
 import requests
 import time, random
-from MysqlConnect import MysqlConnect
-from Spider import Spider
-from videoRankings import getURLFormBilibili, prepareAllRankings
-from Uploader import Uploader
+from pyfiles.MysqlConnect import MysqlConnect
+from pyfiles.Spider import Spider
+from pyfiles.videoRankings import prepareAllRankings
+from pyfiles.Uploader import Uploader
+from pyfiles.WEBrefresh import refreshUpRank
 from datetime import datetime, timedelta
 from math import ceil
 
@@ -173,7 +174,7 @@ def addPossibleUpFromRanking():
                 ret = addOnePossibleUp(up, numFollowings, numFollowers)
                 if ret: missed.append(ret)
                 time.sleep(random.random() * 10)
-        time.sleep(random.random() * 60)
+        time.sleep(random.random() * 180)
     return missed
 
 
@@ -331,11 +332,10 @@ def updateTop100():
 def updateTop100():
     mysqlconnect = MysqlConnect()
     mysqlconnect.createTable2()
-    sql = "SELECT `ID` from `PossibleTopUp` ORDER BY `Followers` DESC;"
-    upList = [id for (id,) in mysqlconnect.queryOutCome(sql)[:100]]
+    sql = "SELECT `ID` from `PossibleTopUp` ORDER BY `Followers` DESC LIMIT 100;"
+    upList = [id for (id,) in mysqlconnect.queryOutCome(sql)]
     print(upList)
     rank = 1
-    random.shuffle(upList)
     for id in upList:
         up = Uploader(id, True)
         up.crawl_basic()
@@ -345,8 +345,6 @@ def updateTop100():
         mysqlconnect.queryOutCome(sql)
         rank += 1
         time.sleep(random.random() * 5)
-
-
 
 def updateUpByDate(upID, date):
     mysqlconnect = MysqlConnect()
@@ -436,7 +434,7 @@ if __name__ == "__main__":
     # print("done check")
 
     # --------- Call below every day ----------------------
-
+    '''
     # 1. crawl up following and add to list
     crawlUp, addUp = crawlUpFollowing()
     if len(addUp) != 0:
@@ -481,21 +479,21 @@ if __name__ == "__main__":
         print('----------------You need to call recover() and then start from step 5.----------------')
         exit()
     print('Refreshed PossibledTopUp.')
-    
+
     # 5. Update Top100 according to newest possibleTopUp
     print("Cooling for 10 mins.")
     time.sleep(600)  # stop for 30 min
     updateTop100()
     print('Updated Neewst Top 100 Up.')
-
+    '''
     # 6. Collect today's date's data for every top100 Up
     mysqlconnect = MysqlConnect()
     sql = "SELECT `ID` from `PossibleTopUp`;"
     upList = [up for (up,) in mysqlconnect.queryOutCome(sql)]
     print(upList)
     for up in upList:
-        updateUpByDate(up, str(datetime.now()))
-        #updateUpByDate(up, str(datetime.now() + timedelta(hours=15)))
+        #updateUpByDate(up, str(datetime.now()))
+        updateUpByDate(up, str(datetime.now() + timedelta(hours=15)))
 
     print(datetime.now())
 
