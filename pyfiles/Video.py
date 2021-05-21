@@ -278,8 +278,3 @@ if __name__ == "__main__":
     #v.comments_parse(50).to_csv('comments.csv')
     v.generate_wordscloud_1()
     v.generate_wordscloud_2()
-
-
-
-
-

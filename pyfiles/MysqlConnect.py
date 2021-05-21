@@ -37,13 +37,42 @@ class MysqlConnect:  # Connect to MySQL
         cursor.close()
         db.close()
 
+    '''
     def createTable2(self):
-        # create the table for up's following
+    # create the table for up's following
+    table2 = CREATE TABLE `NewestTop100`
+                    (
+                        `ID` INT UNIQUE,
+                        `Rank` INT,
+                        `Followings` INT,
+                         PRIMARY KEY(ID)
+                    )ENGINE=innodb DEFAULT CHARSET=utf8;
+    db = self.getConnect()
+    cursor = db.cursor()
+    cursor.execute("DROP TABLE IF EXISTS `NewestTop100`;")
+    cursor.execute(table2)
+    cursor.close()
+    db.close()
+    '''
+
+    def createTable2(self):
+        # create the table for newest top 100
         table2 = '''CREATE TABLE `NewestTop100`
-                        (
-                            `ID` INT UNIQUE,
+                        (   
                             `Rank` INT,
+                            `ID` INT UNIQUE,
+                            `Name` VARCHAR(50),
+                            `Sex` VARCHAR(10),
+                            `Birthday` VARCHAR(50),
+                            `Place` VARCHAR(50),
+                            `Level` INT,
+                            `Face` VARCHAR(200),
                             `Followings` INT,
+                            `Followers` BIGINT,
+                            `Likes` BIGINT,
+                            `Views` BIGINT,
+                            `Sign` VARCHAR(200),
+                            `Official` VARCHAR(200),
                              PRIMARY KEY(ID)
                         )ENGINE=innodb DEFAULT CHARSET=utf8;'''
         db = self.getConnect()
@@ -73,11 +102,23 @@ class MysqlConnect:  # Connect to MySQL
             INSERT INTO `{}` VALUES ({}, {}, {}, {}, {});
             '''.format(tableName, ID, numFollowings, numFollowers, nunmLikes, numViews)
         return sql
-
+    '''
     def getInsertToTable2Sql(self, tableName, ID, rank, numFollowings):
-        sql = '''
+        sql = 
             INSERT INTO `{}` VALUES ({}, {}, {});
-            '''.format(tableName, ID, rank, numFollowings)
+            .format(tableName, ID, rank, numFollowings)
+        return sql
+    '''
+
+    def getInsertToTable2Sql(self, tableName, rank, id, name, sex, birthday, place, level, face, followings, followers, likes, views, sign, official):
+        temp = [("'", r"\'"), ('"', r'\"')]
+        for old, new in temp:
+            name = name.replace(old, new)
+            sign = sign.replace(old, new)
+            official = official.replace(old, new)
+        sql = '''
+                INSERT INTO `{}` VALUES ({}, {}, '{}', '{}', '{}', '{}', {}, '{}', {}, {}, {}, {}, '{}', '{}');
+              '''.format(tableName, rank, id, name, sex, birthday, place, level, face, followings, followers, likes, views, sign, official)
         return sql
 
     def queryOutCome(self, sql):

@@ -134,4 +134,3 @@ if __name__ == "__main__":
     prepareAllRankings()
     #fields = ['all', 'guochuang', 'douga', 'music', 'dance', 'game', 'technology', 'digital', 'car', 'life', 'food', 'animal',
               #'kichiku', 'fashion', 'ent', 'cinephile', 'origin', 'rookie']
-

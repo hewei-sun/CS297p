@@ -1,31 +1,49 @@
 import time
-
-from prepareTopUp import getLikesByID
 from Video import Video
 import requests
 from Spider import Spider
 from collections import Counter
-from pyfiles.convert import img_deal
+from MysqlConnect import MysqlConnect
+#from pyfiles.convert import img_deal
 
 user_agents='Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36'
 headers = {'user-agent': user_agents,
            'referer': ''}
 
+def getLikesByID(userID):  # return numLikes and numViews
+    url = f'https://api.bilibili.com/x/space/upstat?mid={userID}&jsonp=jsonp'
+    r = ''
+    try:
+        r = requests.session().get(url, headers=headers, timeout=5)
+        json = r.json()
+        if not json['data']:
+            print('Banned at {}'.format(url))
+        numLikes, numViews = json['data']['likes'], json['data']['archive']['view']
+        return numLikes, numViews
+    except:
+        if r: print(r.text)
+        print("Sorry, due to some reason, you failed to visit the page.\t{}".format(url))
+        return 0, 0
+
 class Uploader:
-    def __init__(self, uid=None):
+    def __init__(self, uid=None, isTop100=False):
         self.uid = uid
+        self.isTop100 = isTop100  # False indicates not top100 or unknown yet
+
         self.name = None
         self.sex = None
-        self.faceURL = None
         self.birthday = None
         self.place = None
+        self.level = None
+        self.faceURL = None
+
         self.numFollowers = None
         self.numFollowings = None
-        self.sign = None
-        self.level = None
-        self.official = None
         self.numLikes = None
         self.numViews = None
+
+        self.sign = None
+        self.official = None
 
         self.masterPieces = [] # 代表作
         self.tags = Counter()  # Count the tag name from history videoList
@@ -43,23 +61,35 @@ class Uploader:
     def crawl_basic(self):
         headers['referer'] = f'https://space.bilibili.com/{self.uid}'
         url = f'https://api.bilibili.com/x/web-interface/card?mid={self.uid}&jsonp=jsonp&article=true'
+        print(url)
         _json = requests.session().get(url, headers=headers, timeout=5).json()
         card = _json['data']['card']
         self.name = card['name']
-        self.sex = card['sex']
+        if card['sex']=='男':
+            self.sex = 'Male'
+        elif card['sex']=='女':
+            self.sex = 'Female'
+        else:
+            self.sex = 'N/A'
         self.faceURL = card['face']
         self.birthday = card['birthday']
         self.place = card['place']
-        self.numFollowers = card['fans']
-        self.numFollowings = card['attention']
+
+        if self.isTop100:
+            mysqlconnect = MysqlConnect()
+            sql = 'SELECT `Followings`, `Followers`, `Likes`, `Views` FROM `PossibleTopUp` WHERE `ID`={};'.format(self.uid)
+            self.numFollowings, self.numFollowers, self.numLikes, self.numViews = mysqlconnect.queryOutCome(sql)[0]
+        else:
+            self.numFollowers = card['fans']
+            self.numFollowings = card['attention']
+            self.numLikes, self.numViews = getLikesByID(self.uid)
+
         self.sign = card['sign']
-
         self.level = card['level_info']['current_level']
-
         if card['Official']:
             self.official = card['Official']['title'] + '\n' + card['Official']['desc']
 
-        self.numLikes, self.numViews = getLikesByID(self.uid)
+
 
     def extract_videoInfo1(self, dict): # used to collect master piece
         v = Video()
@@ -121,20 +151,16 @@ class Uploader:
             for item in dict['vlist']:
                 self.historyVideos.append(self.extract_videoInfo2(item))
             pgn += 1
-
+'''
     def getFacePhoto():
         # return type: cv2
-        return img_deal(faceURL)
+        return img_deal(self.faceURL)
+'''
 
 if __name__ == "__main__":
     # https: // space.bilibili.com / 5970160
     #up = Uploader(5970160)
-    up = Uploader(218869446)
+    up = Uploader(208259)
     up.crawl_basic()
-    up.crawl_videoList()
+    #up.crawl_videoList()
     print(up)
-
-
-
-
-

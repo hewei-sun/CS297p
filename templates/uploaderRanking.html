@@ -1,38 +1,46 @@
 <!DOCTYPE html> 
+<meta name="referrer" content="no-referrer" />
 <meta charset="utf-8">
 <html>
     <head>
-        <title>Data Analysis Platform for Bilibili</title>
-        <link href="static/bootstrap/css/bootstrap/3.3.6/bootstrap.min.css" rel="stylesheet">
-        <link rel="stylesheet" href="static/bootstrap-select/bootstrap-select.min.css">
+        <title>B-RANK</title>
         <script src="static/bootstrap/js/jquery/2.0.0/jquery.min.js"></script>
-        <script src="static/bootstrap-select/bootstrap-select.min.js"></script>
-        <script src="static/bootstrap/js/bootstrap/3.3.6/bootstrap.min.js"></script>
         <script src="static/echarts/echarts.min.js"></script>
     </head>
     <body>
         <br>
         <br>
         <br>
-        <p><h1 style="text-align:center">Uploader Ranking</h1></p>
-        <center></center><table id = 'tab' border="1">
+        <p><h1 style="text-align:center">Uploader Ranking</h1>
+        <button type="button" class="btn btn-default"  style="width:180px;height:50px" onclick="javascript:self.location='reUpRank'">refresh</button>
+        <button type="button" class="btn btn-default"  style="width:180px;height:50px" onclick="javascript:self.location='index'">back</button>
+        <center><table id = 'tab' border="0">
             <tr>
                 <th>rank</th>
-                <th>id</th>
-                <th>followings</th>
+                <th>name</th>
+                <th>sex</th>
+                <th>face</th>
+                <th>birthday</th>
+                <th>place</th>
+                <th>numFollowers</th>
+                <th>numFollowings</th>
+                <th>sign</th>
+                <th>level</th>
+                <th>official</th>
+                <th>numLikes</th>
+                <th>numViews</th>
             </tr>
         </table></center>
+
         <script type = "text/javascript">
-            console.log({{upList}})
-            console.log({{upList}}[2])
-            console.log({{upList}}.length)
-            var str = "";
-            console.log(typeof {{upList}}[2][0])
-            var l = {{upList}}[2][0].toString()
-            console.log(typeof l)
-            for (var i = 0; i < {{upList}}.length; i++) {
-                str = "<tr><td>" + {{upList}}[i][2].toString()+ "</td><td>" +{{upList}}[i][0].toString() + "</td><td>"+{{upList}}[i][1].toString()+"</td></tr>";
-                $("#tab").append(str);
+            var obj= eval({{uplist|tojson}});
+            //console.log(typeof obj[0])
+            //console.log(typeof obj[0]["uid"]);
+            for (var i = 0; i < obj.length; i++) {
+                var j= i+1;
+                var strUp = "<tr><td>"+j+"</td><td>" +obj[i]["name"].toString() + "</td><td>"+obj[i]["sex"].toString()+ "</td><td><img src='static/upFaces/"+obj[i]["uid"]+".png' width=\"100\" height=\"100\" alt=\"no such image\"/></td><td>"+obj[i]["birthday"]+ "</td><td>"+obj[i]["place"]+ "</td><td>"+obj[i]["numFollowings"]+ "</td><td>"+obj[i]["numFollowers"]+ "</td><td>"+obj[i]["sign"]+ "</td><td>"+obj[i]["level"]+ "</td><td>"+obj[i]["official"]+ "</td><td>"+obj[i]["numLikes"]+ "</td><td>"+obj[i]["numViews"]+"</td></tr>";
+                //console.log(strUp)
+                $("#tab").append(strUp);
             }
         </script>
 

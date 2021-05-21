@@ -1,22 +1,35 @@
 # coding=utf-8
-from flask import Flask, render_template, request, redirect, url_for, make_response,jsonify
-from pyfiles.webUpRank import webUpRank
+from flask import Flask, render_template, request, redirect, url_for, make_response,jsonify,send_from_directory
+from pyfiles.WEBrank import webUpRank,webVideoRank
 import json
 app = Flask(__name__)
 
 @app.route('/uploaderRanking', methods = ['POST','GET'])
 def uploaderRanking():
     uplist = webUpRank()
-    return render_template('uploaderRanking.html', upList = json.dumps(uplist))
+    return render_template('uploaderRanking.html', uplist = json.dumps(uplist,default = lambda x: x.__dict__,indent=4))
     
+@app.route('/reUpRank', methods = ['POST','GET'])
+def reUpRank():
+    #todo: refresh
+    uplist = webUpRank()
+    return render_template('uploaderRanking.html', uplist = json.dumps(uplist,default = lambda x: x.__dict__,indent=4))
+
+@app.route('/videoRanking', methods = ['POST','GET'])
+def videoRanking():
+    vlist,field = webVideoRank()
+    return render_template('videoRanking.html',vlist = json.dumps(vlist,default = lambda x:x__dict__,indent=4),field=field)
+
+@app.route('/reVideoRank', methods = ['POST','GET'])
+def reVideoRank():
+    #todo:refresh
+    vlist,field = webVideoRank()
+    return render_template('videoRanking.html',vlist = json.dumps(vlist,default = lambda x:x__dict__,indent=4),field=field)
+ 
 @app.route('/uploaderRelation', methods = ['POST','GET'])
 def uploaderRelation():
     return render_template('uploaderRelationship.html')
-'''
-@app.route('/individualAnalysis', methods = ['POST','GET'])
-def individualAnalysis():
-    return render_template('individualAnalysis.html')
-'''
+
 @app.route('/videoAnalysis', methods = ['POST','GET'])
 def videoAnalysis():
     return render_template('individualAnalysis.html')
@@ -27,11 +40,9 @@ def uploaderAnalysis():
 
 @app.route('/summary', methods = ['POST','GET'])
 def summary():
-    return render_template('summary.html')
+    return send_from_directory('static','summary.pdf')
 
-@app.route('/videoRanking', methods = ['POST','GET'])
-def videoRanking():
-    return render_template('videoRanking.html')
+
     
 @app.route('/', methods=['POST', 'GET']) 
 
