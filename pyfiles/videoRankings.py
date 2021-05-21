@@ -1,6 +1,6 @@
-from Video import Video
-from Spider import Spider
-from MysqlConnect import MysqlConnect
+from pyfiles.Video import Video
+from pyfiles.Spider import Spider
+from pyfiles.MysqlConnect import MysqlConnect
 import time, random
 import re
 
@@ -21,7 +21,6 @@ def getRanking(field, url):  # Crawl a single ranking page
     spider = Spider(url,headers)
     spider.setSoup()
     itemList = spider.findTagByAttrs('li', {'class':'rank-item'})
-    videosList = []
     for itm in itemList:
         v = Video()
         v.bvid = itm.find('a', {'class': 'title'}).get('href')[len('//www.bilibili.com/video/'):]
@@ -35,13 +34,11 @@ def getRanking(field, url):  # Crawl a single ranking page
         v.view = dataBox[1].text.strip()  # 弹幕
         v.up_name = dataBox[2].text.strip()
         v.up_id = itm.find('div', {'class': 'detail'}).find('a').get('href')[len('//space.bilibili.com/'):]
-        #v.cover_url = v.get_cover()
-
+        v.cover_url = v.get_cover()
         insertToTable(field, v.rank, v.title, v.bvid, v.play, v.view, v.up_name, v.up_id, v.cover_url)
-        videosList.append(v)
 
         time.sleep(random.random() * 5)
-    return videosList
+
 
 def getURLFormBilibili():
     rankingFields = {
@@ -76,11 +73,9 @@ def getURLFormBilibili():
     return urlDict
 
 def prepareAllRankings():
-    rankings = {}
     urlDict = getURLFormBilibili()
     for field, url in urlDict.items():
-        prepareOneRanking(field)
-    return rankings
+        prepareOneRanking(field, url)
 
 def creatTable(field):
     mysqlconnect = MysqlConnect()
@@ -115,13 +110,11 @@ def insertToTable(field, rank, title, bvid, play, view, up_name, up_id, cover_ur
     mysqlconnect.queryOutCome(sql)
     return
 
-def prepareOneRanking(field):
-    url = 'https://www.bilibili.com/v/popular/rank/{}'.format(field)
+def prepareOneRanking(field, url):
     print("Processing `",field,"` Ranking... at ",url)
     creatTable(field)
-    ret = getRanking(field, url)
-    #printRankings(ret)
-    return ret
+    getRanking(field, url)
+
 
 def printRankings(rank):
     str = ''
@@ -131,6 +124,7 @@ def printRankings(rank):
     return str
 
 if __name__ == "__main__":
-    prepareAllRankings()
+    #prepareAllRankings()
     #fields = ['all', 'guochuang', 'douga', 'music', 'dance', 'game', 'technology', 'digital', 'car', 'life', 'food', 'animal',
               #'kichiku', 'fashion', 'ent', 'cinephile', 'origin', 'rookie']
+    getRanking('all', 'https://www.bilibili.com/v/popular/rank/all')
