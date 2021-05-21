@@ -32,20 +32,24 @@ def getLikesByID(userID): # return numLikes and numViews
         return 0, 0
 
 class Uploader:
-    def __init__(self, uid=None):
+    def __init__(self, uid=None, isTop100=False):
         self.uid = uid
+        self.isTop100 = isTop100  # False indicates not top100 or unknown yet
+
         self.name = None
         self.sex = None
-        self.faceURL = None
         self.birthday = None
         self.place = None
+        self.level = None
+        self.faceURL = None
+
         self.numFollowers = None
         self.numFollowings = None
-        self.sign = None
-        self.level = None
-        self.official = None
         self.numLikes = None
         self.numViews = None
+
+        self.sign = None
+        self.official = None
 
         self.masterPieces = [] # 代表作
         self.tags = Counter()  # Count the tag name from history videoList
@@ -63,26 +67,33 @@ class Uploader:
     def crawl_basic(self):
         headers['referer'] = f'https://space.bilibili.com/{self.uid}'
         url = f'https://api.bilibili.com/x/web-interface/card?mid={self.uid}&jsonp=jsonp&article=true'
+        print(url)
         _json = requests.session().get(url, headers=headers, timeout=5).json()
-        #print(_json['message'])
-        if not _json['data']:
-            return
         card = _json['data']['card']
         self.name = card['name']
-        self.sex = card['sex']
+        if card['sex']=='男':
+            self.sex = 'Male'
+        elif card['sex']=='女':
+            self.sex = 'Female'
+        else:
+            self.sex = 'N/A'
         self.faceURL = card['face']
         self.birthday = card['birthday']
         self.place = card['place']
-        self.numFollowers = card['fans']
-        self.numFollowings = card['attention']
+
+        if self.isTop100:
+            mysqlconnect = MysqlConnect()
+            sql = 'SELECT `Followings`, `Followers`, `Likes`, `Views` FROM `PossibleTopUp` WHERE `ID`={};'.format(self.uid)
+            self.numFollowings, self.numFollowers, self.numLikes, self.numViews = mysqlconnect.queryOutCome(sql)[0]
+        else:
+            self.numFollowers = card['fans']
+            self.numFollowings = card['attention']
+            self.numLikes, self.numViews = getLikesByID(self.uid)
+
         self.sign = card['sign']
-
         self.level = card['level_info']['current_level']
-
         if card['Official']:
             self.official = card['Official']['title'] + '\n' + card['Official']['desc']
-
-        self.numLikes, self.numViews = getLikesByID(self.uid)
 
     def extract_videoInfo1(self, dict): # used to collect master piece
         v = Video()

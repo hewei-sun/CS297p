@@ -4,16 +4,16 @@
 <html>
     <head>
         <title>B-RANK</title>
-        <script src="static/bootstrap/js/jquery/2.0.0/jquery.min.js"></script>
-        <script src="static/echarts/echarts.min.js"></script>
+        <script src="/static/bootstrap/js/jquery/2.0.0/jquery.min.js"></script>
+        <script src="/static/echarts/echarts.min.js"></script>
     </head>
     <body>
         <br>
         <br>
         <br>
         <p><h1 style="text-align:center">Uploader Ranking</h1>
-        <button type="button" class="btn btn-default"  style="width:180px;height:50px" onclick="javascript:self.location='reUpRank'">refresh</button>
-        <button type="button" class="btn btn-default"  style="width:180px;height:50px" onclick="javascript:self.location='index'">back</button>
+        <center><button type="button" class="btn btn-default"  style="width:180px;height:50px" onclick="javascript:self.location='reUpRank'">refresh</button>
+        <button type="button" class="btn btn-default"  style="width:180px;height:50px" onclick="javascript:self.location='index'">back</button></center>
         <center><table id = 'tab' border="0">
             <tr>
                 <th>rank</th>
@@ -31,14 +31,14 @@
                 <th>numViews</th>
             </tr>
         </table></center>
+        <center><a href="#top" target="_self">top</a></center>
 
         <script type = "text/javascript">
             var obj= eval({{uplist|tojson}});
             //console.log(typeof obj[0])
             //console.log(typeof obj[0]["uid"]);
             for (var i = 0; i < obj.length; i++) {
-                var j= i+1;
-                var strUp = "<tr><td>"+j+"</td><td>" +obj[i]["name"].toString() + "</td><td>"+obj[i]["sex"].toString()+ "</td><td><img src='static/upFaces/"+obj[i]["uid"]+".png' width=\"100\" height=\"100\" alt=\"no such image\"/></td><td>"+obj[i]["birthday"]+ "</td><td>"+obj[i]["place"]+ "</td><td>"+obj[i]["numFollowings"]+ "</td><td>"+obj[i]["numFollowers"]+ "</td><td>"+obj[i]["sign"]+ "</td><td>"+obj[i]["level"]+ "</td><td>"+obj[i]["official"]+ "</td><td>"+obj[i]["numLikes"]+ "</td><td>"+obj[i]["numViews"]+"</td></tr>";
+                var strUp = "<tr><td>"+obj[i][0]+"</td><td>" +obj[i][2].toString() + "</td><td>"+obj[i][3].toString()+ "</td><td><img src='static/upFaces/"+obj[i][1]+".png' width=\"100\" height=\"100\" alt=\"no such image\"/></td><td>"+obj[i][5]+ "</td><td>"+obj[i][6]+ "</td><td>"+obj[i][7]+ "</td><td>"+obj[i][8]+ "</td><td>"+obj[i][9]+ "</td><td>"+obj[i][10]+ "</td><td>"+obj[i][11]+ "</td><td>"+obj[i][12]+ "</td><td>"+obj[i][13]+"</td></tr>";
                 //console.log(strUp)
                 $("#tab").append(strUp);
             }

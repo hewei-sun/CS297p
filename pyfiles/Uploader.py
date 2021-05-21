@@ -89,8 +89,6 @@ class Uploader:
         if card['Official']:
             self.official = card['Official']['title'] + '\n' + card['Official']['desc']
 
-
-
     def extract_videoInfo1(self, dict): # used to collect master piece
         v = Video()
         v.tname = dict['tname']
@@ -151,11 +149,7 @@ class Uploader:
             for item in dict['vlist']:
                 self.historyVideos.append(self.extract_videoInfo2(item))
             pgn += 1
-'''
-    def getFacePhoto():
-        # return type: cv2
-        return img_deal(self.faceURL)
-'''
+
 
 if __name__ == "__main__":
     # https: // space.bilibili.com / 5970160

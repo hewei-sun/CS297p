@@ -84,9 +84,9 @@ def prepareAllRankings():
 
 def creatTable(field):
     mysqlconnect = MysqlConnect()
-    sql = f"DROP TABLE IF EXISTS `{field}`;"
+    sql = f"DROP TABLE IF EXISTS `RANK{field}`;"
     mysqlconnect.queryOutCome(sql)
-    sql = f'''CREATE TABLE `{field}`
+    sql = f'''CREATE TABLE `RANK{field}`
             (
                 `Rank` INT UNIQUE,
                 `Title` VARCHAR(200),
@@ -108,7 +108,7 @@ def insertToTable(field, rank, title, bvid, play, view, up_name, up_id, cover_ur
         title = title.replace(old, new)
         up_name = up_name.replace(old, new)
     sql = '''
-            INSERT IGNORE INTO `{}` VALUES ({}, \'{}\', \'{}\', \'{}\', \'{}\', \'{}\', \'{}\', \'{}\');
+            INSERT IGNORE INTO `RANK{}` VALUES ({}, \'{}\', \'{}\', \'{}\', \'{}\', \'{}\', \'{}\', \'{}\');
           '''.format(field, rank, title, bvid, play, view, up_name, up_id, cover_url)
     print(sql)
     mysqlconnect = MysqlConnect()
