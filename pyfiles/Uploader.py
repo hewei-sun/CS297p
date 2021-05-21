@@ -30,7 +30,7 @@ class Uploader:
         self.uid = uid
         self.isTop100 = isTop100  # False indicates not top100 or unknown yet
 
-        self.name = None
+        self.name = None 
         self.sex = None
         self.birthday = None
         self.place = None
