@@ -16,6 +16,11 @@ def img_deal(url,path):
     if os.path.exists(path):
         return
     if url == "None" or url == "":
+        print(url)
+        print(path)
+        return
+    if url[-4:]!=".png" and url[-4:]!=".jpg":
+        print(url)
         print(path)
         return
     img = url_to_image(url)

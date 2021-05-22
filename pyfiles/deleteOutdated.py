@@ -1,6 +1,6 @@
 import os,time
 
- 
+#todo: finish
 modifiedTime = time.localtime(os.stat("D:/mm.cfg").st_mtime)
 createdTime = time.localtime(os.stat("D:/mm.cfg").st_ctime)
  

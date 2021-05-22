@@ -175,7 +175,6 @@ def addPossibleUpFromRanking():
         time.sleep(random.random() * 180)
     return missed
 
-
 def crawlFollowingsByID(up, headers, url_head, direction, n):
     # crawl up's following list in `direction` order for `n` people.
     mysqlconnect = MysqlConnect()
@@ -301,7 +300,6 @@ def crawlUpFollowing():
             tmp1, tmp2 = crawlFollowingsByID(up, headers, url_head, 'desc', todayFollowings)
             missed += tmp1
             if tmp2 == False: missed_add_following.append(up)
-
             todayFollowings -= 250
             if todayFollowings > 0:  # crawl from the reverse direction but only took first `remaining` ones
                 tmp1, tmp2 = crawlFollowingsByID(up, headers, url_head, 'desc', todayFollowings)

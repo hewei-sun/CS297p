@@ -38,7 +38,7 @@
             //console.log(typeof obj[0])
             //console.log(typeof obj[0]["uid"]);
             for (var i = 0; i < obj.length; i++) {
-                var strUp = "<tr><td>"+obj[i][0]+"</td><td>" +obj[i][2].toString() + "</td><td>"+obj[i][3].toString()+ "</td><td><img src='static/upFaces/"+obj[i][1]+".png' width=\"100\" height=\"100\" alt=\"no such image\"/></td><td>"+obj[i][5]+ "</td><td>"+obj[i][6]+ "</td><td>"+obj[i][7]+ "</td><td>"+obj[i][8]+ "</td><td>"+obj[i][9]+ "</td><td>"+obj[i][10]+ "</td><td>"+obj[i][11]+ "</td><td>"+obj[i][12]+ "</td><td>"+obj[i][13]+"</td></tr>";
+                var strUp = "<tr><td>"+obj[i][0]+"</td><td><a href=\"javascript:self.location='uploaderA/"+obj[i][1]+"'\"  style='color:black;'>" +obj[i][2].toString() + "</a></td><td>"+obj[i][3].toString()+ "</td><td><a href=\"javascript:self.location='uploaderA/"+obj[i][1]+"'\"><img src='static/upFaces/"+obj[i][1]+".png' width=\"100\" height=\"100\" alt=\"no such image\"/></a></td><td>"+obj[i][5]+ "</td><td>"+obj[i][6]+ "</td><td>"+obj[i][7]+ "</td><td>"+obj[i][8]+ "</td><td>"+obj[i][9]+ "</td><td>"+obj[i][10]+ "</td><td>"+obj[i][11]+ "</td><td>"+obj[i][12]+ "</td><td>"+obj[i][13]+"</td></tr>";
                 //console.log(strUp)
                 $("#tab").append(strUp);
             }

@@ -30,7 +30,6 @@ def webVideoRank():
     mysqlconnect = MysqlConnect()
     sql = 'SELECT table_name FROM information_schema.TABLES'
     field = [tb[4:] for (tb,) in mysqlconnect.queryOutCome(sql) if tb[0:4] == 'RANK']
-    
     videos=[]
     for f in field:
         sql = f"SELECT `Rank`,`Title`,`BVid`,`Play`,`View`,`Up`,`Up_ID`,`Cover_URL` from `RANK{f}` ORDER BY `Rank`;"

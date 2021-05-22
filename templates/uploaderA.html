@@ -1,0 +1,94 @@
+<!DOCTYPE html> 
+<meta charset="utf-8">
+<html>
+    <head>
+        <title>B-RANK</title>
+        <link href="/static/bootstrap/css/bootstrap/3.3.6/bootstrap.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="/static/bootstrap-select/bootstrap-select.min.css">
+        <script src="/static/bootstrap/js/jquery/2.0.0/jquery.min.js"></script>
+        <script src="/static/bootstrap-select/bootstrap-select.min.js"></script>
+        <script src="/static/bootstrap/js/bootstrap/3.3.6/bootstrap.min.js"></script>
+        <script src="/static/echarts/echarts.min.js"></script>
+    </head>
+    <body>
+        <button type="button" class="btn btn-default"  style="width:180px;height:50px" onclick="javascript:self.location='index'">back</button>
+        <br>
+        <br>
+        <br>
+        <p><h1 style="text-align:center">Uploader Analysis</h1></p>
+        <br>
+        <form action="" method='POST'>
+            <center><h4>Uploader ID
+                <select  class="selectpicker" data-live-search="true" id="upid" name="upid">
+                    <option value="546195">老番茄 546195</option>
+                </select><!--
+                &nbsp&nbspUploader Name
+                <select  class="selectpicker" data-live-search="true" id="menu2ra" name="menu2ra" onchange="me2('#menu2ra','#menu3ra')">
+                    <option value="">Bilibili</option>
+                </select>-->
+                &nbsp&nbsp<button type="submit" class="btn btn-default" id ="searchUpId" value="searchUpId">search</button>
+                <script type = "text/javascript">
+                    var mu1 = document.getElementById("upid");
+                    //name,value
+                    mu1.add(new Option("fhdskjhf","djsf"));
+                    mu1.add(new Option("fhdsdkjhf","djsff"));
+                </script>
+            </h4></center>
+        </form>
+        
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4" id = "face">
+                </div>
+                <div class="col-md-8">
+                    <center><table id = "information" border="0">
+                    </table></center>
+                </div>
+            </div>
+        </div>
+        <center><a href="#top" target="_self" style="color:black;">top</a></center>
+    </body>
+</html>
+
+
+
+
+
+<script type = "text/javascript">
+    var Up = eval({{up|tojson}});
+    //console.log(Up[0]["uid"]);
+    //console.log(Up[0]);
+    var face="<img src='/static/upFaces/"+Up[0]["uid"].toString()+".png' width=\"100\" height=\"100\" alt=\"no such image\"/>";
+    $("#face").append(face);
+    var info = "<tr><td>"+Up[0]["name"]+"</td><td>"+Up[0]["sex"]+"</td></tr><tr><td>Followers:"+Up[0]["numFollowers"]+"</td><td>Followings:"+Up[0]["numFollowings"]+"</td></tr>";
+    $('#information').append(info);
+    info = "<tr><td>Likes:"+Up[0]["numLikes"]+"</td><td>Views:"+Up[0]["numViews"]+"</td></tr>";
+    $('#information').append(info);
+    info = "<tr><td>Official:"+Up[0]["official"]+"</td></tr>";
+    $('#information').append(info);
+    //console.log(typeof Up[0]["isTop100"]);
+    //todo: rank
+    info = "<tr>";
+    if(Up[0]["isTop100"])
+        info = info+"<td>Rank:"+"<td>";
+    info = info + "<td>level:"+Up[0]["level"]+"</td></tr>";
+    
+    info = "<tr><td>Sign:"+Up[0]["sign"]+"</td></tr>";
+    $('#information').append(info);
+    info = Up[0]["birthday"];
+    if(info==""){
+        if(Up[0]["place"]!="")
+            info = "<tr><td>Place:"+Up[0]["place"];
+        else
+            info = "<tr></tr>";
+    }
+    else{
+        info = "<tr><td>Birthday:"+info;
+        if(Up[0]["place"]!="")
+            info = info+"</td><td>Place:"+Up[0]["place"];
+    }
+    if(info!= "<tr></tr>")
+        info = info +"</td></tr>";
+    $('#information').append(info);
+    
+</script>
