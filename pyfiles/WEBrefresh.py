@@ -1,7 +1,7 @@
-from pyfiles.videoRankings import prepareOneRanking
+from pyfiles.WEBvideoRankings import prepareOneRanking
 from pyfiles.MysqlConnect import MysqlConnect
-from pyfiles.Uploader import Uploader
-from WEBconvert import cover_deal
+from pyfiles.WEBUploader import Uploader
+from pyfiles.WEBconvert import cover_deal
 import time, random
 from datetime import datetime
 import requests
@@ -99,20 +99,7 @@ def refreshUpRank(range=105): # refresh top 100 up rank
     if alert==True:
         print("Too Frequent Refresh Queries, Please Wait for a While to Proceed Next Refresh.")
 
-def downloadCoversFrom(tableName):
-    mysqlconnect = MysqlConnect()
-    sql = f'select `BVid`, `Cover_URL` from `{tableName}`;'
-    items = [(bvid, url) for (bvid, url,) in mysqlconnect.queryOutCome(sql)]
-    for bvid, url in items:
-        cover_deal(url, '../static/videoFaces/' + bvid + '.png')
 
-def downloadAllCovers():
-    tables = ['RANKall', 'RANKguochuang', 'RANKdouga', 'RANKmusic', 'RANKdance', 'RANKgame', 'RANKtechnology',
-              'RANKdigital',
-              'RANKcar', 'RANKlife', 'RANKfood', 'RANKanimal', 'RANKkichiku', 'RANKfashion', 'RANKent', 'RANKcinephile',
-              'RANKorigin', 'RANKrookie']
-    for t in tables:
-        downloadCoversFrom(t)
 
 
 if __name__ == "__main__":
@@ -125,5 +112,5 @@ if __name__ == "__main__":
         refreshVideoRank(f)
         print(datetime.now())
     '''
-    downloadAllCovers()
+    #downloadAllCovers()
     #refreshUpRank()

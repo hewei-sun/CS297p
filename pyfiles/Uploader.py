@@ -73,7 +73,7 @@ class Uploader:
         else:
             self.sex = 'N/A'
         self.faceURL = card['face']
-        img_deal(self.faceURL, '../static/upFaces/' + str(self.uid) + '.png')
+        img_deal(self.faceURL,  '../static/upFaces/'+str(self.uid)+'.png')
         self.birthday = card['birthday']
         self.place = card['place']
 

@@ -1,10 +1,8 @@
-from Video import Video
-from Spider import Spider
-from MysqlConnect import MysqlConnect
-from WEBconvert import cover_deal
+from pyfiles.WEBVideo import Video
+from pyfiles.Spider import Spider
+from pyfiles.MysqlConnect import MysqlConnect
 import time, random
 import re
-import os
 
 user_agents='Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36'
 headers = {'user-agent': user_agents,
@@ -124,27 +122,9 @@ def printRankings(rank):
         str += v.__str__()
     print(str)
     return str
-    
-def downloadCoversFrom(tableName):
-    mysqlconnect = MysqlConnect()
-    sql = f'select `BVid`, `Cover_URL` from `{tableName}`;'
-    items = [(bvid, url) for (bvid, url,) in mysqlconnect.queryOutCome(sql)]
-    print(tableName)
-    for bvid, url in items:
-        #print(url)
-        cover_deal(url, '../static/videoFaces/' + bvid + '.png')
-
-def downloadAllCovers():
-    tables = ['RANKall', 'RANKguochuang', 'RANKdouga', 'RANKmusic', 'RANKdance', 'RANKgame', 'RANKtechnology',
-              'RANKdigital',
-              'RANKcar', 'RANKlife', 'RANKfood', 'RANKanimal', 'RANKkichiku', 'RANKfashion', 'RANKent', 'RANKcinephile',
-              'RANKorigin', 'RANKrookie']
-    for t in tables:
-        downloadCoversFrom(t)
 
 if __name__ == "__main__":
     #prepareAllRankings()
     #fields = ['all', 'guochuang', 'douga', 'music', 'dance', 'game', 'technology', 'digital', 'car', 'life', 'food', 'animal',
               #'kichiku', 'fashion', 'ent', 'cinephile', 'origin', 'rookie']
-    #getRanking('all', 'https://www.bilibili.com/v/popular/rank/all')
-    downloadAllCovers()
+    getRanking('all', 'https://www.bilibili.com/v/popular/rank/all')

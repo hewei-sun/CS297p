@@ -9,7 +9,7 @@ def webUpRank():
     sql = "SELECT `Rank`,`ID`,`Name`,`Sex`,`Face`,`Birthday`,`Place`,`Followings`,`Followers`,`Sign`,`Level`,`Official`,`Likes`,`Views` from `NewestTop100` ORDER BY `Rank`;"
     upList = [(Rank,ID,Name,Sex,Face,Birthday,Place,Followings,Followers,Sign,Level,Official,Likes,Views) for (Rank,ID,Name,Sex,Face,Birthday,Place,Followings,Followers,Sign,Level,Official,Likes,Views,) in mysqlconnect.queryOutCome(sql)]
     for up in upList:
-        directory = 'static/upFaces/'+str(up[1])+'.png';
+        directory = 'static/upFaces/'+str(up[1])+'.png'
         if not os.path.exists(directory):
             img_deal(up[4],directory)
     return upList

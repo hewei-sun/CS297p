@@ -9,12 +9,12 @@ import json
 import time, random
 from pandas import Series, DataFrame
 from pyfiles.Spider import Spider
-'''
+from pyfiles.WEBconvert import cover_deal
+
 user_agents='Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36'
-'''
-user_agents='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36 Edg/90.0.818.62'
 headers = {'user-agent': user_agents,
            'referer': ''}
+
 
 class Video:
     def __init__(self):
@@ -50,11 +50,14 @@ class Video:
     def get_cover(self):
         url = f'https://www.bilibili.com/video/{self.bvid}'
         spider = Spider(url, headers)
+        print(url)
         spider.setSoup()
         if spider.soup.find('div', {'id': 'app', 'class': 'main-container clearfix'}):
             self.cover_url = spider.soup.find('meta', {'property': 'og:image'}).get('content')
             return
-        cover_url = spider.soup.find('meta', {'itemprop': 'image'}).get('content')
+        #cover_url = spider.soup.find('meta', {'itemprop': 'image'}).get('content')
+        cover_url = spider.soup.find('meta', {'itemprop': 'thumbnailUrl'}).get('content')
+        cover_deal(cover_url, 'static/videoFaces/' + self.bvid + '.png')
         return cover_url
 
     def start_crawlling(self, for_rank=False):
@@ -280,8 +283,3 @@ if __name__ == "__main__":
     #v.comments_parse(50).to_csv('comments.csv')
     v.generate_wordscloud_1()
     v.generate_wordscloud_2()
-
-
-
-
-

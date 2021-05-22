@@ -1,6 +1,7 @@
 import urllib.request
 import numpy as np
 import cv2
+import os
 def url_to_image(url):
   # download the image, convert it to a NumPy array, and then read
   # it into OpenCV format
@@ -12,6 +13,11 @@ def url_to_image(url):
   return image
 
 def img_deal(url,path):
+    if os.path.exists(path):
+        return
+    if url == "None" or url == "":
+        print(path)
+        return
     img = url_to_image(url)
     rows, cols, channel = img.shape
 
@@ -30,6 +36,11 @@ def img_deal(url,path):
     #print(path)
 
 def cover_deal(url,path):
+    if os.path.exists(path):
+        return
+    if url == "None" or url == "":
+        print(path)
+        return
     img = url_to_image(url)
     cv2.imwrite(path, img)
     

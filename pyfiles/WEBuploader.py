@@ -4,6 +4,8 @@ from pyfiles.WEBvideo import Video
 from pyfiles.Spider import Spider
 from collections import Counter
 import random
+from pyfiles.MysqlConnect import MysqlConnect
+from pyfiles.WEBconvert import img_deal
 '''
 user_agents='Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36'
 
@@ -16,7 +18,7 @@ headers = {'user-agent': random.choice(user_agents),
            'referer': 'https://space.bilibili.com/562197/',
            'Cookie':"DedeUserID__ckMd5=2e697f52386d43f6; _uuid=EF2DAAED-E1B0-1B62-AC90-95FFE33A56CB71197infoc; fts=1531899601; buvid3=1FE86BE0-86E5-4443-9EAA-B4692C34CAB24610infoc; DedeUserID=7255947; blackside_state=1; rpdid=|(JY~|J)J|RY0J'ullYuuJmRR; CURRENT_FNVAL=80; LIVE_BUVID__ckMd5=97f1fede58a29dba; LIVE_BUVID=51c5671403d1ff3a3002f405d313a243; CURRENT_QUALITY=80; fingerprint=45bff20986aa4242239b29ed097fc9e9; buvid_fp=1FE86BE0-86E5-4443-9EAA-B4692C34CAB24610infoc; buvid_fp_plain=538F6B2F-C709-4EA9-B284-ACD021EF94AB18531infoc; SESSDATA=9c02010b%2C1628737703%2Cdfaa0%2A21; bili_jct=21e92ad75ec8725e7d1cde39f76d728e; sid=br04i46m; bp_video_offset_7255947=525371403363400156; bp_t_offset_7255947=526517094477426377; bfe_id=1bad38f44e358ca77469025e0405c4a6; PVID=2"}
 
-def getLikesByID(userID): # return numLikes and numViews
+def getLikesByID(userID):  # return numLikes and numViews
     url = f'https://api.bilibili.com/x/space/upstat?mid={userID}&jsonp=jsonp'
     r = ''
     try:
@@ -36,7 +38,7 @@ class Uploader:
         self.uid = uid
         self.isTop100 = isTop100  # False indicates not top100 or unknown yet
 
-        self.name = None
+        self.name = None 
         self.sex = None
         self.birthday = None
         self.place = None
@@ -78,6 +80,7 @@ class Uploader:
         else:
             self.sex = 'N/A'
         self.faceURL = card['face']
+        img_deal(self.faceURL, 'static/upFaces/'+str(self.uid)+'.png')
         self.birthday = card['birthday']
         self.place = card['place']
 
@@ -155,19 +158,12 @@ class Uploader:
             for item in dict['vlist']:
                 self.historyVideos.append(self.extract_videoInfo2(item))
             pgn += 1
-            
-    def __repr__(self):
-        return repr((self.uid, self.name, self.sex, self.faceURL, self.birthday, self.place, self.numFollowings, self.numFollowers,self.sign,self.level,self.numViews,self.numLikes))
+
 
 if __name__ == "__main__":
     # https: // space.bilibili.com / 5970160
     #up = Uploader(5970160)
-    up = Uploader(218869446)
+    up = Uploader(208259)
     up.crawl_basic()
-    up.crawl_videoList()
+    #up.crawl_videoList()
     print(up)
-
-
-
-
-
