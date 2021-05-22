@@ -298,13 +298,13 @@ def crawlUpFollowing():
                                     )ENGINE=innodb DEFAULT CHARSET=utf8;'''.format('following' + str(up))
             mysqlconnect.queryOutCome(sql)
             print(f'This is the first time to crawl Up {up}\'s following list.')
-            tmp1, tmp2 = crawlFollowingsByID(up, headers, url_head, 'desc', todayFollowings - numFollowings)
+            tmp1, tmp2 = crawlFollowingsByID(up, headers, url_head, 'desc', todayFollowings)
             missed += tmp1
             if tmp2 == False: missed_add_following.append(up)
 
             todayFollowings -= 250
             if todayFollowings > 0:  # crawl from the reverse direction but only took first `remaining` ones
-                tmp1, tmp2 = crawlFollowingsByID(up, headers, url_head, 'desc', todayFollowings - numFollowings)
+                tmp1, tmp2 = crawlFollowingsByID(up, headers, url_head, 'desc', todayFollowings)
                 missed += tmp1
                 if tmp2 == False: missed_add_following.append(up)
 

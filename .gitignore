@@ -2,3 +2,4 @@
 /static/videoFaces
 nohup.out
 /pyfiles/t.txt
+/pyfiles/__pycache__
