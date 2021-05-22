@@ -23,14 +23,14 @@ def getRanking(field, url):  # Crawl a single ranking page
     spider = Spider(url,headers)
     spider.setSoup()
     itemList = spider.findTagByAttrs('li', {'class':'rank-item'})
+    v = Video()
     for itm in itemList:
-        v = Video()
         v.bvid = itm.find('a', {'class': 'title'}).get('href')[len('//www.bilibili.com/video/'):]
         v.rank = int(itm.find('div', {'class': 'num'}).text)
         #v.start_crawlling(True) # true for telling crawller to only crawl needed info for present video in rankings
 
         v.title = delEmojis(itm.find('a', {'class': 'title'}).text)
-        v.score = itm.find('div', {'class': 'pts'}).find('div').text
+        #v.score = itm.find('div', {'class': 'pts'}).find('div').text
         dataBox = itm.find('div', {'class': 'detail'}).find_all('span')
         v.play = dataBox[0].text.strip()  # 播放量
         v.view = dataBox[1].text.strip()  # 弹幕
@@ -156,5 +156,6 @@ if __name__ == "__main__":
         tmp = v.get_cover()
         sql = f"UPDATE `RANK{field}` SET `Cover_URL` = '{tmp}' WHERE `BVid` = '{bvid}';"
         mysqlconnect.queryOutCome(sql)
-    '''
     downloadAllCovers()
+    '''
+    getRanking('rookie', 'https://www.bilibili.com/v/popular/rank/rookie')
