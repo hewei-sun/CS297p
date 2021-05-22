@@ -1,6 +1,6 @@
-from pyfiles.Video import Video
-from pyfiles.Spider import Spider
-from pyfiles.MysqlConnect import MysqlConnect
+from Video import Video
+from Spider import Spider
+from MysqlConnect import MysqlConnect
 import time, random
 import re
 

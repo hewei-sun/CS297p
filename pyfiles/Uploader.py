@@ -1,14 +1,15 @@
 import time
-from pyfiles.Video import Video
+from Video import Video
 import requests
-from pyfiles.Spider import Spider
+from Spider import Spider
 from collections import Counter
-from pyfiles.MysqlConnect import MysqlConnect
-from pyfiles.WEBconvert import img_deal
+from MysqlConnect import MysqlConnect
+from WEBconvert import img_deal
 
 user_agents='Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36'
 headers = {'user-agent': user_agents,
            'referer': ''}
+
 
 def getLikesByID(userID):  # return numLikes and numViews
     url = f'https://api.bilibili.com/x/space/upstat?mid={userID}&jsonp=jsonp'
@@ -72,7 +73,7 @@ class Uploader:
         else:
             self.sex = 'N/A'
         self.faceURL = card['face']
-        img_deal(self.faceURL, 'static/upFaces/' + str(self.uid) + '.png')
+        img_deal(self.faceURL, '../static/upFaces/' + str(self.uid) + '.png')
         self.birthday = card['birthday']
         self.place = card['place']
 

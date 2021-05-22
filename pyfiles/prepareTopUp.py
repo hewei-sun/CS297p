@@ -1,12 +1,10 @@
 import requests
 import time, random
-from pyfiles.MysqlConnect import MysqlConnect
-from pyfiles.Spider import Spider
-from pyfiles.videoRankings import prepareAllRankings
-from pyfiles.Uploader import Uploader
-from pyfiles.WEBrefresh import refreshUpRank
+from MysqlConnect import MysqlConnect
+from Spider import Spider
+from videoRankings import prepareAllRankings
+from Uploader import Uploader
 from datetime import datetime, timedelta
-from math import ceil
 
 '''
 user_agents=['Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36']
@@ -149,7 +147,7 @@ def addOnePossibleUp(mid, numFollowings, numFollowers):
 
 def addPossibleUpFromRanking():
     tables = ['RANKall', 'RANKguochuang', 'RANKdouga', 'RANKmusic', 'RANKdance', 'RANKgame', 'RANKtechnology', 'RANKdigital',
-              'RANKcar', 'RANKlife', 'RANKfood', 'RANKanimal', 'RANKkichiku', 'RANKfashion', 'RANKent', 'RANKcinephile', 'RANKorigin', 'RANKrookie']
+     'RANKcar', 'RANKlife', 'RANKfood', 'RANKanimal', 'RANKkichiku', 'RANKfashion', 'RANKent', 'RANKcinephile', 'RANKorigin', 'RANKrookie']
     missed = []
     mysqlconnect = MysqlConnect()
     random.shuffle(tables)
@@ -315,6 +313,7 @@ def crawlUpFollowing():
     print('Failed to visit these Ups\' full following list page(s):', missed_add_following)
     return missed, missed_add_following
 
+
 '''
 def updateTop100():
     mysqlconnect = MysqlConnect()
@@ -329,6 +328,7 @@ def updateTop100():
         rank += 1
 '''
 
+
 def updateTop100():
     mysqlconnect = MysqlConnect()
     mysqlconnect.createTable2()
@@ -339,12 +339,15 @@ def updateTop100():
     for id in upList:
         up = Uploader(id, True)
         up.crawl_basic()
-        sql = mysqlconnect.getInsertToTable2Sql('NewestTop100', rank, id, up.name, up.sex, up.birthday, up.place, up.level, up.faceURL,
-                                                up.numFollowings, up.numFollowers, up.numLikes, up.numViews, up.sign, up.official)
+        sql = mysqlconnect.getInsertToTable2Sql('NewestTop100', rank, id, up.name, up.sex, up.birthday, up.place,
+                                                up.level, up.faceURL,
+                                                up.numFollowings, up.numFollowers, up.numLikes, up.numViews, up.sign,
+                                                up.official)
         print(sql)
         mysqlconnect.queryOutCome(sql)
         rank += 1
         time.sleep(random.random() * 5)
+
 
 def updateUpByDate(upID, date):
     mysqlconnect = MysqlConnect()
@@ -425,7 +428,6 @@ def fixPartialUp():
 
 
 if __name__ == "__main__":
-
     print(datetime.now())
     # initialTop100('https://www.bilibili.com/read/cv10601513')
     # updateTop100()
@@ -434,7 +436,7 @@ if __name__ == "__main__":
     # print("done check")
 
     # --------- Call below every day ----------------------
-    '''
+
     # 1. crawl up following and add to list
     crawlUp, addUp = crawlUpFollowing()
     if len(addUp) != 0:
@@ -485,15 +487,15 @@ if __name__ == "__main__":
     time.sleep(600)  # stop for 30 min
     updateTop100()
     print('Updated Neewst Top 100 Up.')
-    '''
+
     # 6. Collect today's date's data for every top100 Up
     mysqlconnect = MysqlConnect()
     sql = "SELECT `ID` from `PossibleTopUp`;"
     upList = [up for (up,) in mysqlconnect.queryOutCome(sql)]
     print(upList)
     for up in upList:
-        #updateUpByDate(up, str(datetime.now()))
-        updateUpByDate(up, str(datetime.now() + timedelta(hours=15)))
+        updateUpByDate(up, str(datetime.now()))
+        #updateUpByDate(up, str(datetime.now() + timedelta(hours=15)))
 
     print(datetime.now())
 
