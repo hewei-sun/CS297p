@@ -46,6 +46,7 @@ def reVideoRank(fields):
 @app.route('/uploaderAnalysis', methods = ['POST','GET'])
 def uploaderAnalysis():
     if request.method == 'POST':
+        print(request.form)
         upid = request.form.get('upid')
         if upid == "":
             name = request.form.get('idname')
@@ -53,14 +54,14 @@ def uploaderAnalysis():
                 #todo:
                 print("need convert")
             else:
-                upid = req.form.get('name')
+                upid = request.form.get('text')
+        print(upid)
         return redirect(url_for('uploaderA',upid = upid))
     return render_template('uploaderAnalysis.html')
  
 @app.route('/upMenu', methods = ['POST','GET'])   
 def upMenu():
     uplist = upMe()
-    print(uplist)
     return jsonify({"success": 200, "msg": "success", "uplist": uplist})
 
 @app.route('/uploaderA/<upid>', methods = ['POST','GET'])
