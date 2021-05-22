@@ -27,9 +27,9 @@ def getLikesByID(userID):  # return numLikes and numViews
         return 0, 0
 
 class Uploader:
-    def __init__(self, uid=None, isTop100=False):
+    def __init__(self, uid=None, inPossibleTopUp=False):
         self.uid = uid
-        self.isTop100 = isTop100  # False indicates not top100 or unknown yet
+        self.inPossibleTopUp = inPossibleTopUp  # False indicates not top100 or unknown yet
 
         self.name = None 
         self.sex = None
@@ -77,13 +77,14 @@ class Uploader:
         self.birthday = card['birthday']
         self.place = card['place']
 
-        if self.isTop100:
+        self.numFollowers = card['fans']
+        self.numFollowings = card['attention']
+
+        if self.inPossibleTopUp:
             mysqlconnect = MysqlConnect()
-            sql = 'SELECT `Followings`, `Followers`, `Likes`, `Views` FROM `PossibleTopUp` WHERE `ID`={};'.format(self.uid)
-            self.numFollowings, self.numFollowers, self.numLikes, self.numViews = mysqlconnect.queryOutCome(sql)[0]
+            sql = 'SELECT `Likes`, `Views` FROM `PossibleTopUp` WHERE `ID`={};'.format(self.uid)
+            self.numLikes, self.numViews = mysqlconnect.queryOutCome(sql)[0]
         else:
-            self.numFollowers = card['fans']
-            self.numFollowings = card['attention']
             self.numLikes, self.numViews = getLikesByID(self.uid)
 
         self.sign = card['sign']
@@ -151,6 +152,29 @@ class Uploader:
             for item in dict['vlist']:
                 self.historyVideos.append(self.extract_videoInfo2(item))
             pgn += 1
+
+    def return4data(self):
+        if not self.inPossibleTopUp:
+            print("Sorry we currently do not have this Up's history Data.")
+            return
+
+        mysqlconnect = MysqlConnect()
+        sql = f"SELECT `Date`, `Followings`, `Followers`, `Likes`, `Views`, `Rank` from `Up{self.uid}`;"
+        date, followings, followers, likes, views, rank = [], [], [], [], [], []
+        table = mysqlconnect.queryOutCome(sql)
+        for row in table:
+            date.append(row[0].strftime("%Y-%m-%d"))
+            followings.append(row[1])
+            followers.append(row[2])
+            likes.append(row[3])
+            views.append(row[4])
+            rank.append(row[5])
+
+        sql = f'SELECT 1 FROM `NewestTop100` WHERE `ID`={self.uid};'
+        if mysqlconnect.queryOutCome(sql):
+            return date, followings, followers, likes, views, rank
+        else:
+            return date, followings, followers, likes, views
 
 
 if __name__ == "__main__":
