@@ -1,6 +1,6 @@
 from pyfiles.WEBvideoRankings import prepareOneRanking
 from pyfiles.MysqlConnect import MysqlConnect
-from pyfiles.WEBUploader import Uploader
+from pyfiles.WEBuploader import Uploader
 from pyfiles.WEBconvert import cover_deal
 import time, random
 from datetime import datetime

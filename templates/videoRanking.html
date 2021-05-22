@@ -52,7 +52,7 @@
                 $("#"+fields[i]).append(strf);
                 for(var j = 0;j<vList[0].length;j++){
                     var k = j+1;
-                    strf = "<tr><td>"+vList[i][j][0]+"</td><td>"+vList[i][j][1]+"</td><td>"+vList[i][j][3]+"</td><td>"+vList[i][j][4]+"</td><td>"+vList[i][j][5]+"</td><td>"+vList[i][j][7]+"</td></tr>";
+                    strf = "<tr><td>"+vList[i][j][0]+"</td><td>"+vList[i][j][1]+"</td><td>"+vList[i][j][3]+"</td><td>"+vList[i][j][4]+"</td><td>"+vList[i][j][5]+"</td><td><img src='static/videoFaces/"+vList[i][j][2]+".png' width=\"150\" height=\"100\" alt=\"no such image\"/></td></tr>";
                     $("#"+fields[i]+"list").append(strf);
                 }
             }

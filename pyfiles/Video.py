@@ -50,13 +50,13 @@ class Video:
     def get_cover(self):
         url = f'https://www.bilibili.com/video/{self.bvid}'
         spider = Spider(url, headers)
-        print(url)
         spider.setSoup()
+        '''
         if spider.soup.find('div', {'id': 'app', 'class': 'main-container clearfix'}):
             self.cover_url = spider.soup.find('meta', {'property': 'og:image'}).get('content')
             return
-        #cover_url = spider.soup.find('meta', {'itemprop': 'image'}).get('content')
-        cover_url = spider.soup.find('meta', {'itemprop': 'thumbnailUrl'}).get('content')
+        '''
+        cover_url = spider.soup.find('meta', {'property': 'og:image'}).get('content')
         cover_deal(cover_url, '../static/videoFaces/' + self.bvid + '.png')
         return cover_url
 

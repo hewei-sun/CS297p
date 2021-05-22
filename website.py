@@ -21,7 +21,6 @@ def rereu():
 
 @app.route('/reUpRank', methods = ['POST','GET'])
 def reUpRank():
-    #todo: refresh
     uplist = wreUpRank()
     return render_template('uploaderRanking.html', uplist = json.dumps(uplist,default = lambda x: x.__dict__,indent=4))
 
@@ -36,7 +35,6 @@ def rerev(fields):
     
 @app.route('/reVideoRank/<fields>', methods = ['POST','GET'])
 def reVideoRank(fields):
-    #todo:refresh
     if fields=="index":
         return redirect(url_for('index'))
     vlist,field,start = wreVideoRank(fields)

@@ -1,4 +1,4 @@
-from pyfiles.WEBVideo import Video
+from pyfiles.WEBvideo import Video
 from pyfiles.Spider import Spider
 from pyfiles.MysqlConnect import MysqlConnect
 import time, random

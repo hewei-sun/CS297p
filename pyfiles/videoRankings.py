@@ -147,4 +147,14 @@ if __name__ == "__main__":
     #fields = ['all', 'guochuang', 'douga', 'music', 'dance', 'game', 'technology', 'digital', 'car', 'life', 'food', 'animal',
               #'kichiku', 'fashion', 'ent', 'cinephile', 'origin', 'rookie']
     #getRanking('all', 'https://www.bilibili.com/v/popular/rank/all')
+    '''
+    videos = [('guochuang', 'BV17p4y147p7'), ('ent', 'BV1u44y1r7Hj'), ('cinephile', 'BV1jU4y1b7r7')]
+    v = Video()
+    mysqlconnect = MysqlConnect()
+    for field, bvid in videos:
+        v.bvid = bvid
+        tmp = v.get_cover()
+        sql = f"UPDATE `RANK{field}` SET `Cover_URL` = '{tmp}' WHERE `BVid` = '{bvid}';"
+        mysqlconnect.queryOutCome(sql)
+    '''
     downloadAllCovers()
