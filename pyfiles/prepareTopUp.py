@@ -150,7 +150,7 @@ def addPossibleUpFromRanking():
      'RANKcar', 'RANKlife', 'RANKfood', 'RANKanimal', 'RANKkichiku', 'RANKfashion', 'RANKent', 'RANKcinephile', 'RANKorigin', 'RANKrookie']
     missed = []
     mysqlconnect = MysqlConnect()
-    random.shuffle(tables)
+    #random.shuffle(tables)
     for table in tables:
         sql = f'select `Up_ID` from `{table}`;'
         upList = [item for (item,) in mysqlconnect.queryOutCome(sql)]
@@ -172,7 +172,7 @@ def addPossibleUpFromRanking():
                 ret = addOnePossibleUp(up, numFollowings, numFollowers)
                 if ret: missed.append(ret)
                 time.sleep(random.random() * 10)
-        time.sleep(random.random() * 180)
+        time.sleep(random.random() * 300)
     return missed
 
 def crawlFollowingsByID(up, headers, url_head, direction, n):
