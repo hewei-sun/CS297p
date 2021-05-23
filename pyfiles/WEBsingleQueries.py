@@ -22,6 +22,20 @@ def ifPossible(uid):
         return True
     return  False
 
+def searchVideo(input):
+    if input.isdigit():  # search by ID
+        bvid = input
+    else:  # search by name/alias
+        url = f'https://search.bilibili.com/video?keyword={input}'
+        spider = Spider(url)
+        spider.setSoup()
+        link = spider.findTagByAttrs('li', {'class': 'video-item matrix'})[0].find('a').get('href')
+        #print(link)
+        bvid = link[len('//www.bilibili.com/video/'):][:-len('?from=search')]
+        #print(bvid)
+    v = Video(bvid)
+    return v
+
 if __name__ == "__main__":
     up = searchUp("大会员")
     up.crawl_basic()
