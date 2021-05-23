@@ -17,10 +17,10 @@ headers = {'user-agent': user_agents,
 
 
 class Video:
-    def __init__(self):
+    def __init__(self, bvid=None):
         self.rank = None
         self.title = None
-        self.bvid = None
+        self.bvid = bvid
         #self.score = None
         self.play = None
         self.view = None # danmu
