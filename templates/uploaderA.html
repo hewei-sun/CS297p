@@ -33,7 +33,7 @@
                 Input Up Id or Name
                 <!--<div class="input-group">-->
                     
-                    <select  class="selectpicker" data-live-search="true" id="idname" name="idname" data-width="60px">
+                    <select  class="selectpicker" data-live-search="true" id="idname" name="idname" data-width="100px">
                         <option value="0">id</option>
                         <option value="1">name</option>
                     </select>
@@ -67,7 +67,7 @@
 <script type = "text/javascript">
     var Up = eval({{up|tojson}});
     //console.log(Up[0]["uid"]);
-    //console.log(Up[0]);
+    console.log(Up[0]);
     var face="<img src='/static/upFaces/"+Up[0]["uid"].toString()+".png' width=\"100\" height=\"100\" alt=\"no such image\"/>";
     $("#face").append(face);
     var info = "<tr><td>"+Up[0]["name"]+"</td><td>"+Up[0]["sex"]+"</td></tr><tr><td>Followers:"+Up[0]["numFollowers"]+"</td><td>Followings:"+Up[0]["numFollowings"]+"</td></tr>";
@@ -77,12 +77,12 @@
     info = "<tr><td>Official:"+Up[0]["official"]+"</td></tr>";
     $('#information').append(info);
     //console.log(typeof Up[0]["isTop100"]);
-    //todo: rank
     info = "<tr>";
-    if(Up[0]["isTop100"])
-        info = info+"<td>Rank:"+"<td>";
+    var r = {{rank|tojson}};
+    if(Up[0]["inPossibleTopUp"])
+        info = info+"<td>Rank:"+r+"</td>";
     info = info + "<td>level:"+Up[0]["level"]+"</td></tr>";
-    
+    $('#information').append(info);
     info = "<tr><td>Sign:"+Up[0]["sign"]+"</td></tr>";
     $('#information').append(info);
     info = Up[0]["birthday"];

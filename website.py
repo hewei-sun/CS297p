@@ -1,9 +1,11 @@
 # coding=utf-8
 from flask import Flask, render_template, request, redirect, url_for, make_response,jsonify,send_from_directory
-from pyfiles.WEBrank import webUpRank,webVideoRank
-from pyfiles.WEBrefresh import refreshUpRank,refreshVideoRank
+from pyfiles.WEBrank import webUpRank,webVideoRank,wreVideoRank
+from pyfiles.WEBrefresh import refreshUpRank
 from pyfiles.WEBupAnalysis import uploaderAna
-from pyfiles.WEBmenu import upMe
+from pyfiles.WEBmenu import upMe,viMe
+from pyfiles.WEBsingleQueries import searchUp
+from pyfiles.WEBvideoAnalysis import videoAna
 import json
 app = Flask(__name__)
 
@@ -27,8 +29,6 @@ def reUpRank():
 def videoRanking(fields):
     if fields == "index":
         return redirect(url_for('index'))
-    if fields[0:10] == "uploaderA/":
-        return redirect(url_for('fields'))
     vlist,field,start = webVideoRank()
     if fields =="init":
         fields = start
@@ -38,24 +38,30 @@ def videoRanking(fields):
 def upRanktoAna(upid):
     return redirect(url_for('uploaderA',upid = upid))
 
-@app.route('/videoRanking/reVideoRank/<fields>', methods = ['POST','GET'])
+@app.route('/videoRanking/videoA/<bid>',methods = ['POST','GET'])
+def viRanktoAna(bid):
+    return redirect(url_for('videoA',bid = bid))
+
+@app.route('/reVideoRank/<fields>', methods = ['POST','GET'])
 def reVideoRank(fields):
-    refreshVideoRank(fields)
-    return redirect(url_for('videoRanking',fields = fields))
+    videos=wreVideoRank(fields)
+    return jsonify({"success": 200, "msg": "success", "videos": videos})
 
 @app.route('/uploaderAnalysis', methods = ['POST','GET'])
 def uploaderAnalysis():
     if request.method == 'POST':
-        print(request.form)
+        #print(request.form)
         upid = request.form.get('upid')
         if upid == "":
+            up = request.form.get('text')
+            if up == "":
+                return render_template('uploaderAnalysis.html')
             name = request.form.get('idname')
             if name == '1':
-                #todo:
-                print("need convert")
+                upid = searchUp(up)
             else:
-                upid = request.form.get('text')
-        print(upid)
+                upid = up
+        #print(upid)
         return redirect(url_for('uploaderA',upid = upid))
     return render_template('uploaderAnalysis.html')
  
@@ -70,9 +76,18 @@ def uploaderA(upid):
         return redirect(url_for('index'))
     if request.method == 'POST':
         upid = request.form.get('upid')
+        if upid == "":
+            up = request.form.get('text')
+            if up == "":
+                return redirect(url_for('uploaderAnalysis'))
+            name = request.form.get('idname')
+            if name == '1':
+                upid = searchUp(up)
+            else:
+                upid = up
         return redirect(url_for('uploaderA',upid = upid))
-    up = uploaderAna(upid)
-    return render_template('uploaderA.html',up = json.dumps(up,default = lambda x:x.__dict__,indent=4,separators=(',',':')))
+    up,rank = uploaderAna(upid)
+    return render_template('uploaderA.html',up = json.dumps(up,default = lambda x:x.__dict__,indent=4,separators=(',',':')),rank = rank)
 
 @app.route('/summary', methods = ['POST','GET'])
 def summary():
@@ -81,7 +96,48 @@ def summary():
 
 @app.route('/videoAnalysis', methods = ['POST','GET'])
 def videoAnalysis():
-    return render_template('individualAnalysis.html')
+    if request.method == 'POST':
+        print(request.form)
+        bid = request.form.get('bid')
+        if bid == "":
+            vi = request.form.get('text')
+            if vi == "":
+                return render_template('videoAnalysis.html')
+            name = request.form.get('idname')
+            if name == '1':
+                #todo
+                bid = vi
+            else:
+                bid = vi
+        return redirect(url_for('videoA',bid = bid))
+    return render_template('videoAnalysis.html')
+ 
+@app.route('/viMenu', methods = ['POST','GET'])   
+def viMenu():
+    vlist = viMe()
+    return jsonify({"success": 200, "msg": "success", "vlist": vlist})
+
+@app.route('/videoA/<bid>', methods = ['POST','GET'])
+def videoA(bid):
+    if bid == "index":
+        return redirect(url_for('index'))
+    if request.method == 'POST':
+        print(request.form)
+        bid = request.form.get('bid')
+        if bid == "":
+            vi = request.form.get('text')
+            if vi == "":
+                return redirect(url_for('videoAnalysis'))
+            name = request.form.get('idname')
+            if name == '1':
+                #todo
+                bid = vi
+            else:
+                bid = vi
+        return redirect(url_for('videoA',bid = bid))
+    video = videoAna(bid)
+    return render_template('videoA.html',video = json.dumps(video,default = lambda x:x.__dict__,indent=4,separators=(',',':')))    
+    
 
 @app.route('/uploaderRelation', methods = ['POST','GET'])
 def uploaderRelation():
