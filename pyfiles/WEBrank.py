@@ -26,34 +26,20 @@ def wreUpRank():
             img_deal(up[4],directory)
     return upList
     
-def webVideoRank():
+def webVideoRank(fields):
     mysqlconnect = MysqlConnect()
-    sql = 'SELECT table_name FROM information_schema.TABLES'
-    field = [tb[4:] for (tb,) in mysqlconnect.queryOutCome(sql) if tb[0:4] == 'RANK']
-    videos=[]
-    for f in field:
-        sql = f"SELECT `Rank`,`Title`,`BVid`,`Play`,`View`,`Up`,`Up_ID`,`Cover_URL` from `RANK{f}` ORDER BY `Rank`;"
-        vList = [(Rank,Title,BVid,Play,View,Up,Up_ID,Cover_URL) for (Rank,Title,BVid,Play,View,Up,Up_ID,Cover_URL,) in mysqlconnect.queryOutCome(sql)]
-        videos.append(vList)
-        
-        for v in vList:
-            directory = 'static/videoFaces/'+str(v[2])+'.png'
-            if not os.path.exists(directory):
-                cover_deal(v[-1],directory)
-        
-    return videos,field,field[0]
-
-def wreVideoRank(fields):
-    refreshVideoRank(fields)
-    mysqlconnect = MysqlConnect()
-    sql = f"SELECT `Rank`,`Title`,`BVid`,`Play`,`View`,`Up`,`Up_ID`,`Cover_URL` from `RANK{fields}` ORDER BY `Rank`;"
+    sql = f"SELECT `Rank`,`Title`,`BVid`,`Play`,`View`,`Up`,`Up_ID`,`Cover_URL` from `{fields}` ORDER BY `Rank`;"
     vList = [(Rank,Title,BVid,Play,View,Up,Up_ID,Cover_URL) for (Rank,Title,BVid,Play,View,Up,Up_ID,Cover_URL,) in mysqlconnect.queryOutCome(sql)]
     for v in vList:
         directory = 'static/videoFaces/'+str(v[2])+'.png'
         if not os.path.exists(directory):
             cover_deal(v[-1],directory)
-    print(vList)
+    #print(vList)
     return vList
+
+def wreVideoRank(fields):
+    refreshVideoRank(fields[4:])
+    return webVideoRank(fields)
 
 if __name__ == "__main__":
     uplist = webUpRank()

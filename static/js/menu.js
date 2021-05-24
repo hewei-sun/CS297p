@@ -53,8 +53,35 @@ function videoMenu(id){
     //console.log(ups);
     var menu = document.getElementById(id);
     for (let i = 0; i < ups.length; i++) {
-        var str= ups[i]+" "+ids[i];
+        var str= ups[i];
         //console.log(str);
         menu.add(new Option(str, ids[i]));
+    }
+}
+
+function rankMenu(field){
+    var fields=[];
+    $.ajax({
+        type : "post",
+        async : false, 
+        url : "/rankM",
+        data : {},
+        dataType : "json", 
+        success : function(result) {
+            if (result) {
+                //console.log(result);
+                console.log(result["field"]);
+                for(var i=0;i<result["field"].length;i++){
+                    fields.push(result["field"][i]);
+                }
+            }
+        }
+    })
+    //console.log(ups);
+    var menu = document.getElementById(field);
+    for (let i = 0; i < fields.length; i++) {
+        //var str= ups[i];
+        //console.log(str);
+        menu.add(new Option(fields[i], "RANK"+fields[i]));
     }
 }

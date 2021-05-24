@@ -16,32 +16,17 @@
         <br>
         <br>
         <br>
-        <p><h1 style="text-align:center">Video Analysis</h1></p>
+        <p><h1 style="text-align:center">Video Ranking</h1></p>
         <br>
         <form action="" method='POST'>
-            <center><h4>Quick Search
+            <center><h4>Select a field
                 <select  class="selectpicker" data-live-search="true" id="bid" name="bid">
-                    <option value="">please select</option>
                 </select>
                 <script type = "text/javascript">
-                    videoMenu("bid");
+                    rankMenu("bid");
                 </script>
-            </h4></center>
-            
-            <center><h4>
-                Input Video Id or Name
-                    <select  class="selectpicker" data-live-search="true" id="idname" name="idname" data-width="100px">
-                        <option value="0">id</option>
-                        <option value="1">name</option>
-                    </select>
-                    <input type="text" placeholder="这盘注入灵魂的至尊芝士咖喱有点过于美味了！！【nya酱】 BV11f4y1S79w" name = "text"/>
-                        <button class="btn btn-primary">search</button>
+                <button class="btn btn-primary">search</button>
             </h4></center>
         </form>
-        <center><a href="#top" target="_self">top</a></center>
     </body>
 </html>
-<script type="text/javascript">
-    var video=eval({{videos|tojson}})
-    console.log(video)
-</script>

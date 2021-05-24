@@ -8,7 +8,6 @@ def upMe():
 
 def viMe():
     mysqlconnect = MysqlConnect()
-    mysqlconnect = MysqlConnect()
     sql = 'SELECT table_name FROM information_schema.TABLES'
     field = [tb for (tb,) in mysqlconnect.queryOutCome(sql) if tb[0:4] == 'RANK']
     vlist = []
@@ -17,3 +16,9 @@ def viMe():
         vli = [(BVid,Title) for (BVid,Title,) in mysqlconnect.queryOutCome(sql)]
         vlist.append(vli)
     return vlist
+
+def rankMe():
+    mysqlconnect = MysqlConnect()
+    sql = 'SELECT table_name FROM information_schema.TABLES'
+    field = [tb[4:] for (tb,) in mysqlconnect.queryOutCome(sql) if tb[0:4] == 'RANK']
+    return field

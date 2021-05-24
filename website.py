@@ -3,8 +3,8 @@ from flask import Flask, render_template, request, redirect, url_for, make_respo
 from pyfiles.WEBrank import webUpRank,webVideoRank,wreVideoRank
 from pyfiles.WEBrefresh import refreshUpRank
 from pyfiles.WEBupAnalysis import uploaderAna
-from pyfiles.WEBmenu import upMe,viMe
-from pyfiles.WEBsingleQueries import searchUp
+from pyfiles.WEBmenu import upMe,viMe,rankMe
+from pyfiles.WEBsingleQueries import searchUp,searchVideo
 from pyfiles.WEBvideoAnalysis import videoAna
 import json
 app = Flask(__name__)
@@ -15,6 +15,7 @@ app = Flask(__name__)
 def index():
     return render_template('index.html')
 
+#--------up ranking---------
 @app.route('/uploaderRanking', methods = ['POST','GET'])
 def uploaderRanking():
     uplist = webUpRank()
@@ -25,28 +26,44 @@ def reUpRank():
     refreshUpRank()
     return redirect(url_for('uploaderRanking'))
 
-@app.route('/videoRanking/<fields>', methods = ['POST','GET'])
-def videoRanking(fields):
-    if fields == "index":
-        return redirect(url_for('index'))
-    vlist,field,start = webVideoRank()
-    if fields =="init":
-        fields = start
-    return render_template('videoRanking.html',vlist = json.dumps(vlist,default = lambda x:x.__dict__,indent=4),field=field,start=fields)
+#----------video ranking---------
+@app.route('/videoRanking', methods = ['POST','GET'])
+def videoRanking():
+    if request.method == 'POST':
+        field = request.form.get('bid')
+        #print(field)
+        vlist = webVideoRank(field)
+        return render_template('videoRankingf.html',vlist = json.dumps(vlist,default = lambda x:x.__dict__,indent=4),field=field)
+    return render_template('videoR.html')
 
-@app.route('/videoRanking/uploaderA/<upid>',methods = ['POST','GET'])
+@app.route('/reVideoRank/uploaderA/<upid>',methods = ['POST','GET'])
 def upRanktoAna(upid):
     return redirect(url_for('uploaderA',upid = upid))
 
-@app.route('/videoRanking/videoA/<bid>',methods = ['POST','GET'])
+@app.route('/reVideoRank/videoA/<bid>',methods = ['POST','GET'])
 def viRanktoAna(bid):
     return redirect(url_for('videoA',bid = bid))
 
-@app.route('/reVideoRank/<fields>', methods = ['POST','GET'])
-def reVideoRank(fields):
-    videos=wreVideoRank(fields)
-    return jsonify({"success": 200, "msg": "success", "videos": videos})
+@app.route('/reVideoRank/<field>', methods = ['POST','GET'])
+def reVideoRank(field):
+    #print(fields)
+    if field=="videoRanking":
+        return redirect(url_for('videoRanking'))
+    vlist=wreVideoRank(field)
+    #print(videos)
+    return render_template('videoRankingf.html',vlist = json.dumps(vlist,default = lambda x:x.__dict__,indent=4),field=field)
+    #return jsonify({"success": 200, "msg": "success", "videos": videos})
 
+@app.route('/reVideoRank/reVideoRank/<field>', methods = ['POST','GET'])
+def rereVideoRank(field):
+    return redirect(url_for('rereVideoRank',field = field))
+
+@app.route('/rankM',methods = ['POST','GET'])
+def rankM():
+    field = rankMe()
+    return jsonify({"success": 200, "msg": "success", "field": field})
+
+#----------up analysis-------------
 @app.route('/uploaderAnalysis', methods = ['POST','GET'])
 def uploaderAnalysis():
     if request.method == 'POST':
@@ -86,14 +103,14 @@ def uploaderA(upid):
             else:
                 upid = up
         return redirect(url_for('uploaderA',upid = upid))
-    up,rank = uploaderAna(upid)
-    return render_template('uploaderA.html',up = json.dumps(up,default = lambda x:x.__dict__,indent=4,separators=(',',':')),rank = rank)
+    up,rank,infos = uploaderAna(upid)
+    return render_template('uploaderA.html',up = json.dumps(up,default = lambda x:x.__dict__,indent=4,separators=(',',':')),rank = rank,infos = json.dumps(infos,default = lambda x:x.__dict__,indent=4))
 
 @app.route('/summary', methods = ['POST','GET'])
 def summary():
     return send_from_directory('static','summary.pdf')
     
-
+#---------------video analysis-------------
 @app.route('/videoAnalysis', methods = ['POST','GET'])
 def videoAnalysis():
     if request.method == 'POST':
@@ -105,8 +122,7 @@ def videoAnalysis():
                 return render_template('videoAnalysis.html')
             name = request.form.get('idname')
             if name == '1':
-                #todo
-                bid = vi
+                bid = searchVideo(vi)
             else:
                 bid = vi
         return redirect(url_for('videoA',bid = bid))
@@ -130,15 +146,14 @@ def videoA(bid):
                 return redirect(url_for('videoAnalysis'))
             name = request.form.get('idname')
             if name == '1':
-                #todo
-                bid = vi
+                bid = searchVideo(vi)
             else:
                 bid = vi
         return redirect(url_for('videoA',bid = bid))
-    video = videoAna(bid)
-    return render_template('videoA.html',video = json.dumps(video,default = lambda x:x.__dict__,indent=4,separators=(',',':')))    
+    videos = videoAna(bid)
+    return render_template('videoA.html',videos = json.dumps(videos,default = lambda x:x.__dict__,indent=4,separators=(',',':')))    
     
-
+#---------------up relationship------------
 @app.route('/uploaderRelation', methods = ['POST','GET'])
 def uploaderRelation():
     return render_template('uploaderRelationship.html')

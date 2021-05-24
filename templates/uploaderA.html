@@ -10,6 +10,7 @@
         <script src="/static/bootstrap/js/bootstrap/3.3.6/bootstrap.min.js"></script>
         <script src="/static/echarts/echarts.min.js"></script>
         <script src="/static/js/menu.js"></script>
+        <script src="/static/js/uploaderInfo.js"></script>
     </head>
     <body>
         <button type="button" class="btn btn-default"  style="width:180px;height:50px" onclick="javascript:self.location='index'">back</button>
@@ -56,6 +57,7 @@
                 </div>
             </div>
         </div>
+        <div id="info"  style="width: 400px;height:250px;" ></div></center>
         <center><a href="#top" target="_self" style="color:black;">top</a></center>
     </body>
 </html>
@@ -66,6 +68,8 @@
 
 <script type = "text/javascript">
     var Up = eval({{up|tojson}});
+    var infom = eval({{infos|tojson}});
+    console.log(infom);
     //console.log(Up[0]["uid"]);
     console.log(Up[0]);
     var face="<img src='/static/upFaces/"+Up[0]["uid"].toString()+".png' width=\"100\" height=\"100\" alt=\"no such image\"/>";
@@ -79,8 +83,10 @@
     //console.log(typeof Up[0]["isTop100"]);
     info = "<tr>";
     var r = {{rank|tojson}};
-    if(Up[0]["inPossibleTopUp"])
+    if(Up[0]["inPossibleTopUp"]){
         info = info+"<td>Rank:"+r+"</td>";
+        initChart("info",infom);
+    }
     info = info + "<td>level:"+Up[0]["level"]+"</td></tr>";
     $('#information').append(info);
     info = "<tr><td>Sign:"+Up[0]["sign"]+"</td></tr>";
