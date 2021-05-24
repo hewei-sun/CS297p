@@ -434,7 +434,7 @@ if __name__ == "__main__":
     # print("done check")
 
     # --------- Call below every day ----------------------
-
+   
     # 1. crawl up following and add to list
     crawlUp, addUp = crawlUpFollowing()
     if len(addUp) != 0:
@@ -467,7 +467,8 @@ if __name__ == "__main__":
         print('------------You need to Repeat from Step 3.----------------')
         exit()
     print('Added PossibleTopUp from Hot Videos Rankings.')
-
+    
+    '''
     # 4. Refresh PossibleTopUp
     print("Cooling for 30 mins.")
     time.sleep(1800)  # stop for 30 min
@@ -494,6 +495,6 @@ if __name__ == "__main__":
     for up in upList:
         updateUpByDate(up, str(datetime.now()))
         #updateUpByDate(up, str(datetime.now() + timedelta(hours=15)))
-
+    '''
     print(datetime.now())
 
