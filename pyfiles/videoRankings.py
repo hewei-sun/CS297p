@@ -156,6 +156,8 @@ if __name__ == "__main__":
         tmp = v.get_cover()
         sql = f"UPDATE `RANK{field}` SET `Cover_URL` = '{tmp}' WHERE `BVid` = '{bvid}';"
         mysqlconnect.queryOutCome(sql)
-    downloadAllCovers()
-    '''
     getRanking('rookie', 'https://www.bilibili.com/v/popular/rank/rookie')
+    '''
+    downloadAllCovers()
+    
+    
