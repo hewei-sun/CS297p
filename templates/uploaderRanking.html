@@ -6,14 +6,15 @@
         <title>B-RANK</title>
         <script src="/static/bootstrap/js/jquery/2.0.0/jquery.min.js"></script>
         <script src="/static/echarts/echarts.min.js"></script>
+        <script src="/static/js/videoRankRefresh.js"></script>
     </head>
     <body>
         <br>
         <br>
         <br>
         <p><h1 style="text-align:center">Uploader Ranking</h1>
-        <center><button type="button" class="btn btn-default"  style="width:180px;height:50px" onclick="javascript:self.location='reUpRank'">refresh</button>
-        <button type="button" class="btn btn-default"  style="width:180px;height:50px" onclick="javascript:self.location='index'">back</button></center>
+        <center><button type="button" class="btn btn-default"  style="width:180px;height:50px" onclick="javascript:self.location='/reUpRank'">refresh</button>
+        <button type="button" class="btn btn-default"  style="width:180px;height:50px" onclick="javascript:self.location='/index'">back</button></center>
         <center><table id = 'tab' border="0">
             <tr>
                 <th>rank</th>
@@ -31,17 +32,15 @@
                 <th>numViews</th>
             </tr>
         </table></center>
+        <cener><div id="button"></div></cener>
         <center><a href="#top" target="_self">top</a></center>
 
         <script type = "text/javascript">
             var obj= eval({{uplist|tojson}});
+            var pages={{page|tojson}};
             //console.log(typeof obj[0])
             //console.log(typeof obj[0]["uid"]);
-            for (var i = 0; i < obj.length; i++) {
-                var strUp = "<tr><td>"+obj[i][0]+"</td><td><a href=\"javascript:self.location='uploaderA/"+obj[i][1]+"'\"  style='color:black;'>" +obj[i][2].toString() + "</a></td><td>"+obj[i][3].toString()+ "</td><td><a href=\"javascript:self.location='uploaderA/"+obj[i][1]+"'\"><img src='static/upFaces/"+obj[i][1]+".png' width=\"100\" height=\"100\" alt=\"no such image\"/></a></td><td>"+obj[i][5]+ "</td><td>"+obj[i][6]+ "</td><td>"+obj[i][7]+ "</td><td>"+obj[i][8]+ "</td><td>"+obj[i][9]+ "</td><td>"+obj[i][10]+ "</td><td>"+obj[i][11]+ "</td><td>"+obj[i][12]+ "</td><td>"+obj[i][13]+"</td></tr>";
-                //console.log(strUp)
-                $("#tab").append(strUp);
-            }
+            upButton(obj,pages);
         </script>
 
     </body>

@@ -1,14 +1,56 @@
-function initChart(id,infodata){
+function initChart(id,dates,infodata,videos){
     var mychart = echarts.init(document.getElementById(id));
-    console.log(infodata[0]);
-    console.log(infodata);
+    mychart.clear();
+    //console.log(infodata[0]);
+    //console.log(infodata);
+    var serie=[];
+    for(var i=0;i<videos.length;i++){
+        serie.push({
+            name:videos[i][0],
+            type:'line',
+            markLine: {
+                silent: false,
+                lineStyle:{
+                    type:"solid",
+                    color:"	#000080"
+                },
+                data: [{
+                    xAxis: videos[i][1]
+                }],
+                label: {
+                    normal: {
+                        formatter: videos[i][0]
+                    }
+                }
+            }
+        });
+    }
+    if(id=="Rank"||id=="Following"){
+        serie.push({
+            name:id,
+            type:'line',
+            data:infodata.slice(1,)
+        })
+    }else{
+        var datas=[];
+        for(var i=0;i<infodata.length-1;i++){
+            datas.push(infodata[i+1]-infodata[i]);
+        }
+        serie.push({
+            name:id,
+            type:'line',
+            data:datas
+        })
+    }
+    
+    
     var option = {
         tooltip: {
             show:true,
             trigger: 'axis'
         },
         legend: {
-            data:['Following','Follower','Like','View','Rank']
+            data:id
         },
         grid: {
             left: '3%',
@@ -28,41 +70,16 @@ function initChart(id,infodata){
         xAxis: {
             type: 'category',
             boundaryGap: false,
-            data: infodata[0]
+            data: dates.slice(1,)
         },
         yAxis: {
+            min: 'dataMin',
             type: 'value',
             axisLabel : {
                 formatter: '{value}'
             }
         },
-        series : [
-            {
-                name:'Following',
-                type:'line',
-                data:infodata[1]
-            },
-            {
-                name:'Follower',
-                type:'line',
-                data:infodata[2]
-            },
-            {
-                name:'Like',
-                type:'line',
-                data:infodata[3]
-            },
-            {
-                name:'View',
-                type:'line',
-                data:infodata[4]
-            },
-            {
-                name:'Rank',
-                type:'line',
-                data:infodata[5]
-            }
-        ]
+        series : serie
     };
     mychart.setOption(option);
 }

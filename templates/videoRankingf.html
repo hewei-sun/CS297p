@@ -15,12 +15,12 @@
         <br>
         <br>
         <p><h1 style="text-align:center" id = "title"></h1></p>
-        <center><button type="button" class="btn btn-default"  style="width:180px;height:50px" onclick="javascript:self.location='videoRanking'">back</button></center>
+        <center><button type="button" class="btn btn-default"  style="width:180px;height:50px" onclick="javascript:self.location='/videoRanking'">back</button></center>
         <div id = "table">
             <script type = "text/javascript">
                 var fields= {{field|tojson}};
                 console.log(fields);
-                var strf = "<center><button type=\"button\" class=\"btn btn-default\"  style=\"width:180px;height:50px\" onclick=\"javascript:self.location='reVideoRank/"+fields+"'\">refresh</button></center>";
+                var strf = "<center><button type=\"button\" class=\"btn btn-default\"  style=\"width:180px;height:50px\" onclick=\"javascript:self.location='/reVideoRank/"+fields+"'\">refresh</button></center>";
                 $("#table").append(strf);
                 strf = "Video Ranking For Field " + fields.slice(4,);
                 $('#title').append(strf);
@@ -30,8 +30,10 @@
         <center><a href="#top" target="_self">top</a></center>
         <script type = "text/javascript">
             var vList = eval({{vlist|tojson}});
-            console.log(vList[0][2]);
-            addList(vList);
+            console.log(vList);
+            var pages = {{page|tojson}};
+            var fields= {{field|tojson}};
+            addList(vList,pages,fields);
         </script>
     </body>
 </html>

@@ -39,7 +39,6 @@ def webVideoRank(fields):
 
 def wreVideoRank(fields):
     refreshVideoRank(fields[4:])
-    return webVideoRank(fields)
 
 if __name__ == "__main__":
     uplist = webUpRank()

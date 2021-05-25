@@ -16,47 +16,34 @@ def index():
     return render_template('index.html')
 
 #--------up ranking---------
-@app.route('/uploaderRanking', methods = ['POST','GET'])
-def uploaderRanking():
+@app.route('/uploaderRanking/<page>', methods = ['POST','GET'])
+def uploaderRanking(page):
     uplist = webUpRank()
-    return render_template('uploaderRanking.html', uplist = json.dumps(uplist,default = lambda x: x.__dict__,indent=4))
+    return render_template('uploaderRanking.html', uplist = json.dumps(uplist,default = lambda x: x.__dict__,indent=4),page=page)
 
 @app.route('/reUpRank', methods = ['POST','GET'])
 def reUpRank():
     refreshUpRank()
-    return redirect(url_for('uploaderRanking'))
+    return redirect(url_for('uploaderRanking',page='1'))
 
 #----------video ranking---------
+@app.route('/videoRank/<field>/<page>', methods = ['POST','GET'])
+def videoRank(field,page):
+    vlist = webVideoRank(field)
+    return render_template('videoRankingf.html',vlist = json.dumps(vlist,default = lambda x:x.__dict__,indent=4),field=field,page = page)
+
 @app.route('/videoRanking', methods = ['POST','GET'])
 def videoRanking():
     if request.method == 'POST':
         field = request.form.get('bid')
-        #print(field)
-        vlist = webVideoRank(field)
-        return render_template('videoRankingf.html',vlist = json.dumps(vlist,default = lambda x:x.__dict__,indent=4),field=field)
+        return redirect(url_for('videoRank',field=field,page = '1'))
     return render_template('videoR.html')
-
-@app.route('/reVideoRank/uploaderA/<upid>',methods = ['POST','GET'])
-def upRanktoAna(upid):
-    return redirect(url_for('uploaderA',upid = upid))
-
-@app.route('/reVideoRank/videoA/<bid>',methods = ['POST','GET'])
-def viRanktoAna(bid):
-    return redirect(url_for('videoA',bid = bid))
 
 @app.route('/reVideoRank/<field>', methods = ['POST','GET'])
 def reVideoRank(field):
     #print(fields)
-    if field=="videoRanking":
-        return redirect(url_for('videoRanking'))
-    vlist=wreVideoRank(field)
-    #print(videos)
-    return render_template('videoRankingf.html',vlist = json.dumps(vlist,default = lambda x:x.__dict__,indent=4),field=field)
-    #return jsonify({"success": 200, "msg": "success", "videos": videos})
-
-@app.route('/reVideoRank/reVideoRank/<field>', methods = ['POST','GET'])
-def rereVideoRank(field):
-    return redirect(url_for('rereVideoRank',field = field))
+    wreVideoRank(field)
+    return redirect(url_for('videoRank',field=field,page='1'))
 
 @app.route('/rankM',methods = ['POST','GET'])
 def rankM():

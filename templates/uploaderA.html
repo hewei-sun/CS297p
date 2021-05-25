@@ -57,15 +57,24 @@
                 </div>
             </div>
         </div>
-        <div id="info"  style="width: 400px;height:250px;" ></div></center>
+        <div class="container">
+            <div class="row">
+                
+                <div class="col-md-6"><div id="Follower"  style="width: 400px;height:250px;" ></div></div>
+                  
+                <div class="col-md-6"><div id="Rank"  style="width: 400px;height:250px;" ></div></div>
+            </div>
+        </div>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4"><div id="Following"  style="width: 400px;height:250px;" ></div></div>
+                <div class="col-md-4"><div id="Like"  style="width: 400px;height:250px;" ></div></div>
+                <div class="col-md-4"><div id="View"  style="width: 400px;height:250px;" ></div></div>  
+            </div>
+        </div>
         <center><a href="#top" target="_self" style="color:black;">top</a></center>
     </body>
 </html>
-
-
-
-
-
 <script type = "text/javascript">
     var Up = eval({{up|tojson}});
     var infom = eval({{infos|tojson}});
@@ -84,8 +93,13 @@
     info = "<tr>";
     var r = {{rank|tojson}};
     if(Up[0]["inPossibleTopUp"]){
-        info = info+"<td>Rank:"+r+"</td>";
-        initChart("info",infom);
+        if(r!=0)
+            info = info+"<td>Rank:"+r+"</td>";
+        initChart("Following",infom[0],infom[1],[]);
+        initChart("Follower",infom[0],infom[2],[]);
+        initChart("Like",infom[0],infom[3],[]);
+        initChart("View",infom[0],infom[4],[]);
+        initChart("Rank",infom[0],infom[5],[]);
     }
     info = info + "<td>level:"+Up[0]["level"]+"</td></tr>";
     $('#information').append(info);
