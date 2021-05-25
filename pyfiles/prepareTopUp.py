@@ -112,7 +112,7 @@ def refreshPossibleTopUp(upList=None):
     missed = []
     mysqlconnect = MysqlConnect()
     if not upList:
-        sql = "SELECT `ID` FROM `PossibleTopUp`"
+        sql = "SELECT `ID` FROM `PossibleTopUp`;"
         upList = [item for (item,) in mysqlconnect.queryOutCome(sql)]
     mysqlconnect.createTable1()  # deleted the old table, create a new one
     random.shuffle(upList)
@@ -265,7 +265,7 @@ def crawlUpFollowing():
     missed = []
     missed_add_following = []
     mysqlconnect = MysqlConnect()
-    sql = "SELECT `ID`, `Followings` FROM `NewestTop100`"
+    sql = "SELECT `ID`, `Followings` FROM `NewestTop100`;"
     upList = [(up, numFollowings) for (up, numFollowings,) in mysqlconnect.queryOutCome(sql)]
     random.shuffle(upList)
     for up, numFollowings in upList:
@@ -394,7 +394,7 @@ def recover():
 def dropfirst():
     # --------- Use below code to drop the latest row of Up table----------------------
     mysqlconnect = MysqlConnect()
-    sql = 'SELECT table_name FROM information_schema.TABLES'
+    sql = 'SELECT table_name FROM information_schema.TABLES;'
     upList = [tb[2:] for (tb,) in mysqlconnect.queryOutCome(sql) if tb[0:2] == 'Up']
     print(upList)
     for up in upList:
@@ -404,7 +404,7 @@ def dropfirst():
 
 def fixTimeLag():
     mysqlconnect = MysqlConnect()
-    sql = 'SELECT table_name FROM information_schema.TABLES'
+    sql = 'SELECT table_name FROM information_schema.TABLES;'
     upList = [tb[2:] for (tb,) in mysqlconnect.queryOutCome(sql) if tb[0:2] == 'Up']
     print(len(upList))
     for up in upList:
@@ -419,7 +419,7 @@ def fixTimeLag():
 
 def fixPartialUp():
     mysqlconnect = MysqlConnect()
-    sql = 'SELECT table_name FROM information_schema.TABLES'
+    sql = 'SELECT table_name FROM information_schema.TABLES;'
     upList = [tb[2:] for (tb,) in mysqlconnect.queryOutCome(sql) if tb[0:2] == 'Up']
     for up in upList:
         sql = f"SELECT FROM `Up{up}` ORDER BY `Date` DESC LIMIT 1;"
