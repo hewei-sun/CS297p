@@ -2,30 +2,29 @@
 <meta charset="utf-8">
 <html>
     <head>
-        <title>Data Analysis Platform for Bilibili</title>
+        <title>B-RANK</title>
         <link href="static/bootstrap/css/bootstrap/3.3.6/bootstrap.min.css" rel="stylesheet">
-        <link rel="stylesheet" href="static/bootstrap-select/bootstrap-select.min.css">
-        <script src="static/bootstrap/js/jquery/2.0.0/jquery.min.js"></script>
-        <script src="static/bootstrap-select/bootstrap-select.min.js"></script>
-        <script src="static/bootstrap/js/bootstrap/3.3.6/bootstrap.min.js"></script>
-        <script src="static/echarts/echarts.min.js"></script>
+        <link rel="stylesheet" href="/static/bootstrap-select/bootstrap-select.min.css">
+        <script src="/static/bootstrap/js/jquery/2.0.0/jquery.min.js"></script>
+        <script src="/static/bootstrap-select/bootstrap-select.min.js"></script>
+        <script src="/static/bootstrap/js/bootstrap/3.3.6/bootstrap.min.js"></script>
+        <script src="/static/echarts/echarts.min.js"></script>
+        <script src="/static/js/relation.js"></script>
     </head>
     <body>
+        <button type="button" class="btn btn-default"  style="width:180px;height:50px" onclick="javascript:self.location='/index'">back</button>
         <br>
         <br>
         <br>
         <p><h1 style="text-align:center">Uploader Relationship</h1></p>
         <br>
-                    <center><h4>
-                            START
-                            <select  class="selectpicker" data-live-search="true" id="menu1ra" name="menu1ra" onchange="me1('#menu1ra','#menu2ra','#menu3ra')">
-                                    <option value="">Bilibili</option>
-                            </select>
-                            &nbsp&nbspEND
-                            <select  class="selectpicker" data-live-search="true" id="menu2ra" name="menu2ra" onchange="me2('#menu2ra','#menu3ra')">
-                                <option value="">Bilibili</option>
-                            </select>
-                    </h4></center>
+        <div id="relation"  style="width:1200px;height:800px;"></div>
+        <script type="text/javascript">
+            var relation = eval({{relations|tojson}});
+            var up = eval({{ups|tojson}});
+            showRelation("relation",relation,up);
+        </script>
+        <center><a href="#top" target="_self" style="color:black;">top</a></center>
 
     </body>
 </html>

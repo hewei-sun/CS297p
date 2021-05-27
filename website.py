@@ -6,6 +6,7 @@ from pyfiles.WEBupAnalysis import uploaderAna
 from pyfiles.WEBmenu import upMe,viMe,rankMe
 from pyfiles.WEBsingleQueries import searchUp,searchVideo
 from pyfiles.WEBvideoAnalysis import videoAna
+from pyfiles.WEBrelation import showRelation
 import json
 app = Flask(__name__)
 
@@ -143,7 +144,8 @@ def videoA(bid):
 #---------------up relationship------------
 @app.route('/uploaderRelation', methods = ['POST','GET'])
 def uploaderRelation():
-    return render_template('uploaderRelationship.html')
+    relation,ups = showRelation()
+    return render_template('uploaderRelationship.html',relations=json.dumps(relation,default=lambda x:x.__dict__,indent=4),ups = json.dumps(ups,default=lambda x:x.__dict__,indent=4))
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=1129, debug=True)

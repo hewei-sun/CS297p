@@ -59,17 +59,18 @@
         </div>
         <div class="container">
             <div class="row">
-                
-                <div class="col-md-6"><div id="Follower"  style="width: 400px;height:250px;" ></div></div>
-                  
-                <div class="col-md-6"><div id="Rank"  style="width: 400px;height:250px;" ></div></div>
+                <div class="col-md-6"><h4>Follower</h4><div id="Follower"  style="width: 400px;height:250px;" ></div></div>
+                <div class="col-md-6">
+                    <h4>Rank</h4>
+                    <div id="Rank"  style="width: 400px;height:250px;" ></div>
+                </div>
             </div>
         </div>
         <div class="container">
             <div class="row">
-                <div class="col-md-4"><div id="Following"  style="width: 400px;height:250px;" ></div></div>
-                <div class="col-md-4"><div id="Like"  style="width: 400px;height:250px;" ></div></div>
-                <div class="col-md-4"><div id="View"  style="width: 400px;height:250px;" ></div></div>  
+                <div class="col-md-4"><h4>Following</h4><div id="Following"  style="width: 400px;height:250px;" ></div></div>
+                <div class="col-md-4"><h4>Like</h4><div id="Like"  style="width: 400px;height:250px;" ></div></div>
+                <div class="col-md-4"><h4>View</h4><div id="View"  style="width: 400px;height:250px;" ></div></div>  
             </div>
         </div>
         <center><a href="#top" target="_self" style="color:black;">top</a></center>
@@ -95,6 +96,8 @@
     if(Up[0]["inPossibleTopUp"]){
         if(r!=0)
             info = info+"<td>Rank:"+r+"</td>";
+        else
+            info = info+"<td>Possible Top 100 Uploader</td>";
         initChart("Following",infom[0],infom[1],[]);
         initChart("Follower",infom[0],infom[2],[]);
         initChart("Like",infom[0],infom[3],[]);

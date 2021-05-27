@@ -1,6 +1,5 @@
 function initChart(id,dates,infodata,videos){
-    var mychart = echarts.init(document.getElementById(id));
-    mychart.clear();
+    
     //console.log(infodata[0]);
     //console.log(infodata);
     var serie=[];
@@ -25,6 +24,7 @@ function initChart(id,dates,infodata,videos){
             }
         });
     }
+    /*
     if(id=="Rank"||id=="Following"){
         serie.push({
             name:id,
@@ -41,6 +41,28 @@ function initChart(id,dates,infodata,videos){
             type:'line',
             data:datas
         })
+    }
+    */
+    serie.push({
+        name:id,
+        type:'line',
+        data:infodata
+    });
+    if(id=="Rank"){
+        var count=0;
+        for(var i=0;i<infodata.length;i++){
+            if(infodata[i]==0){
+                infodata[i]=101;
+                i++;
+            }
+        }
+        if (count ==infodata.length){
+            var str="<h5>no rank data for this up due to he/she/they never reached Top 100</h5>";
+            $("#Rank").append(str);
+            return;
+        }
+        var str="<h5>all data ranks greater than 100 will be shown as 101</h5>";
+        $("#Rank").append(str);
     }
     
     
@@ -70,7 +92,7 @@ function initChart(id,dates,infodata,videos){
         xAxis: {
             type: 'category',
             boundaryGap: false,
-            data: dates.slice(1,)
+            data: dates
         },
         yAxis: {
             min: 'dataMin',
@@ -81,5 +103,7 @@ function initChart(id,dates,infodata,videos){
         },
         series : serie
     };
+    var mychart = echarts.init(document.getElementById(id));
+    mychart.clear();
     mychart.setOption(option);
 }
