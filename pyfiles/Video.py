@@ -56,8 +56,13 @@ class Video:
             self.cover_url = spider.soup.find('meta', {'property': 'og:image'}).get('content')
             return
         '''
-        cover_url = spider.soup.find('meta', {'property': 'og:image'}).get('content')
-        #cover_deal(cover_url, '../static/videoFaces/' + self.bvid + '.png')
+        cover_url = spider.soup.find('meta', {'property': 'og:image'})
+        if cover_url:
+            cover_url = cover_url.get('content')
+        else:
+            cover_url = spider.soup.find('meta', {'itemprop': 'image'})
+            cover_url = cover_url.get('content') if cover_url else None
+        cover_deal(cover_url, '../static/videoFaces/' + self.bvid + '.png')
         return cover_url
 
     def start_crawlling(self, for_rank=False):

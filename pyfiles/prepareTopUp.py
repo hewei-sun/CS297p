@@ -151,7 +151,7 @@ def addPossibleUpFromRanking():
     missed = []
     mysqlconnect = MysqlConnect()
     #random.shuffle(tables)
-    for table in tables:
+    for table in tables[:8]:
         sql = f'select `Up_ID` from `{table}`;'
         upList = [item for (item,) in mysqlconnect.queryOutCome(sql)]
         print('Start Check UP IDs from ', table, '.')
@@ -434,7 +434,7 @@ if __name__ == "__main__":
     # print("done check")
 
     # --------- Call below every day ----------------------
-   
+    '''
     # 1. crawl up following and add to list
     crawlUp, addUp = crawlUpFollowing()
     if len(addUp) != 0:
@@ -455,10 +455,12 @@ if __name__ == "__main__":
     time.sleep(1800)  # stop for 30 min
     prepareAllRankings()
     print("Saved Hot Videos Ranks")
+    
 
     # 3. Add new ones into PossibleTopUP via today's video ranking
     print("Cooling for 30 mins.")
     time.sleep(1800)  # stop for 30 min
+    '''
     rankUp = addPossibleUpFromRanking()
     if len(rankUp) != 0:
         with open("rankMissed.txt", 'a+') as f:
