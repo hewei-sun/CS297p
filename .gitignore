@@ -1,5 +1,8 @@
 /static/upFaces
 /static/videoFaces
+/static/compressedCover
+/static/cupFaces
+/static/cvideoFaces
 nohup.out
 /pyfiles/t.txt
 /pyfiles/__pycache__

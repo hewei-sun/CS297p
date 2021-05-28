@@ -132,7 +132,7 @@ def downloadCoversFrom(tableName):
     print(tableName)
     for bvid, url in items:
         #print(url)
-        cover_deal(url, '../static/videoFaces/' + bvid + '.png')
+        cover_deal(url, '../static/cvideoFaces/' + bvid + '.png')
 
 def downloadAllCovers():
     tables = ['RANKall', 'RANKguochuang', 'RANKdouga', 'RANKmusic', 'RANKdance', 'RANKgame', 'RANKtechnology',

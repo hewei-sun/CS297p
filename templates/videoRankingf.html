@@ -12,20 +12,21 @@
     </head>
     <body>
         <br>
-        <br>
-        <br>
-        <p><h1 style="text-align:center" id = "title"></h1></p>
-        <center><button type="button" class="btn btn-default"  style="width:180px;height:50px" onclick="javascript:self.location='/videoRanking'">back</button></center>
+        
+        
+        <p><h1 style="text-align:center" id = "title"></h1></p><br>
+        <center><div id="but"><button type="button" class="btn btn-default"  style="width:180px;height:50px" onclick="javascript:self.location='/videoRanking'">back</button></div></center><br>
         <div id = "table">
             <script type = "text/javascript">
                 var fields= {{field|tojson}};
                 console.log(fields);
-                var strf = "<center><button type=\"button\" class=\"btn btn-default\"  style=\"width:180px;height:50px\" onclick=\"javascript:self.location='/reVideoRank/"+fields+"'\">refresh</button></center>";
-                $("#table").append(strf);
+                var strf = "<button type=\"button\" class=\"btn btn-default\"  style=\"width:180px;height:50px\" onclick=\"javascript:self.location='/reVideoRank/"+fields+"'\">refresh</button>";
+                $("#but").append(strf);
                 strf = "Video Ranking For Field " + fields.slice(4,);
                 $('#title').append(strf);
             </script>
-            <center><table id = 'col' border='0'><tr><th>rank</th><th>title</th><th>play</th><th>view</th><th>up</th><th>cover</th></tr></table></center>
+            <center><table id = 'col' border='0'></table></center>
+            <center><div id = "button"></div></center>
         </div>
         <center><a href="#top" target="_self">top</a></center>
         <script type = "text/javascript">

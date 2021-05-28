@@ -36,18 +36,16 @@ function addList(vList,page,fields){
     //log(vList.length);
     var total = (vList.length-1)/10+1;
     //console.log(total);
-    strf="<center>";
-    $("#table").append(strf);
+
     for(var i =1;i<=total;i++){
         strf = "<button type=\"button\" class=\"btn btn-default\"  style=\"width:80px;height:50px\" onclick=\"javascript:self.location='/videoRank/"+fields+"/"+i+"'\">"+i+"</button>";
-        $("#table").append(strf);
+        $("#button").append(strf);
     }
-    strf="</center>";
-    $("#table").append(strf);
+
     //for(var j = 0;j<vList.length;j++){
     for(var j = (page-1)*10;j<page*10;j++){
         var k = j+1;
-        strf = "<tr><td>"+vList[j][0]+"</td><td><a href=\"javascript:self.location='/videoA/"+vList[j][2]+"'\"  style='color:black;'>"+vList[j][1]+"</a></td><td>"+vList[j][3]+"</td><td>"+vList[j][4]+"</td><td><a href=\"javascript:self.location='/uploaderA/"+vList[j][6]+"'\"  style='color:black;'>"+vList[j][5]+"</a></td><td><a href=\"javascript:self.location='/videoA/"+vList[j][2]+"'\"><img src='/static/videoFaces/"+vList[j][2]+".png' width=\"150\" height=\"100\" alt=\"no such image\"/></a></td></tr>";
+        strf = "<tr><td><h2>"+vList[j][0]+"</h2></td><td>&nbsp&nbsp&nbsp&nbsp</td><td><a href=\"javascript:self.location='/videoA/"+vList[j][2]+"'\"><img src='/static/cvideoFaces/"+vList[j][2]+".png' width=\"150\" height=\"100\" alt=\"no such image\"/></a></td><td>&nbsp&nbsp&nbsp&nbsp</td><td><table><tr><td><a href=\"javascript:self.location='/videoA/"+vList[j][2]+"'\"  style='color:black;'><h3>"+vList[j][1]+"</h3></a></td></tr><h5><tr><td><a href=\"javascript:self.location='/uploaderA/"+vList[j][6]+"'\"  style='color:black;'>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp"+vList[j][5]+"</a></td></tr><tr><td><table><tr><td>&nbspPlay:\t"+vList[j][3]+"\t</td><td>\tDanmu:\t"+vList[j][4]+"</td></tr></table></td></tr></h5></table></td></tr><tr><td>&nbsp</td></tr>";
         $("#col").append(strf);
     }
 }
@@ -55,17 +53,15 @@ function addList(vList,page,fields){
 function upButton(uplist,page){
     var strf = "";
     var total = (uplist.length-1)/10+1;
-    strf="<center>";
-    $("#button").append(strf);
+
     for(var i =1;i<=total;i++){
         strf = "<button type=\"button\" class=\"btn btn-default\"  style=\"width:80px;height:50px\" onclick=\"javascript:self.location='/uploaderRanking/"+i+"'\">"+i+"</button>";
         $("#button").append(strf);
     }
-    strf="</center>";
-    $("#button").append(strf);
+
     for (var i = (page-1)*10;i<page*10; i++) {
-        var strUp = "<tr><td>"+uplist[i][0]+"</td><td><a href=\"javascript:self.location='/uploaderA/"+uplist[i][1]+"'\"  style='color:black;'>" +uplist[i][2].toString() + "</a></td><td>"+uplist[i][3].toString()+ "</td><td><a href=\"javascript:self.location='/uploaderA/"+uplist[i][1]+"'\"><img src='/static/upFaces/"+uplist[i][1]+".png' width=\"100\" height=\"100\" alt=\"no such image\"/></a></td><td>"+uplist[i][5]+ "</td><td>"+uplist[i][6]+ "</td><td>"+uplist[i][7]+ "</td><td>"+uplist[i][8]+ "</td><td>"+uplist[i][9]+ "</td><td>"+uplist[i][10]+ "</td><td>"+uplist[i][11]+ "</td><td>"+uplist[i][12]+ "</td><td>"+uplist[i][13]+"</td></tr>";
-                //console.log(strUp)
+        var strUp = "<tr><td><h2>"+uplist[i][0]+"</h2></td><td>&nbsp&nbsp</td><td><a href=\"javascript:self.location='/uploaderA/"+uplist[i][1]+"'\"><img src='/static/cupFaces/"+uplist[i][1]+".png' width=\"200\" height=\"200\" alt=\"no such image\"/></a></td><td>&nbsp&nbsp</td><td><table><tr><td><h3><a href=\"javascript:self.location='/uploaderA/"+uplist[i][1]+"'\"  style='color:black;'>" +uplist[i][2].toString() + "</a></h3></td></tr><h5><tr><td><table><tr><td>"+uplist[i][3].toString()+ "</td><td>&nbsp</td><td>Level:\t"+uplist[i][10]+ "</td></tr><tr><td>Follower:\t"+uplist[i][7]+ "</td><td>&nbsp</td><td>Following:\t"+uplist[i][8]+ "</td></tr><tr><td>Like:\t"+uplist[i][12]+ "</td><td>&nbsp</td><td>View:\t"+uplist[i][13]+"</td></tr></table></td></tr><tr><td>Official:\t"+uplist[i][11]+ "</td></tr><tr><td>Bio:\t"+uplist[i][9]+ "</td></tr></table></td></tr></h5><tr><td>&nbsp</td></tr>";
+        //console.log(strUp)
         $("#tab").append(strUp);
     }
 }

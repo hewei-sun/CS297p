@@ -62,7 +62,7 @@ class Video:
         else:
             cover_url = spider.soup.find('meta', {'itemprop': 'image'})
             cover_url = cover_url.get('content') if cover_url else None
-        cover_deal(cover_url, '/static/videoFaces/' + self.bvid + '.png')
+        cover_deal(cover_url, '/static/cvideoFaces/' + self.bvid + '.png')
         return cover_url
 
     def start_crawlling(self, for_rank=False):

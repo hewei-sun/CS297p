@@ -10,7 +10,7 @@ def webUpRank():
     sql = "SELECT `Rank`,`ID`,`Name`,`Sex`,`Face`,`Birthday`,`Place`,`Followings`,`Followers`,`Sign`,`Level`,`Official`,`Likes`,`Views` from `NewestTop100` ORDER BY `Rank`;"
     upList = [(Rank,ID,Name,Sex,Face,Birthday,Place,Followings,Followers,Sign,Level,Official,Likes,Views) for (Rank,ID,Name,Sex,Face,Birthday,Place,Followings,Followers,Sign,Level,Official,Likes,Views,) in mysqlconnect.queryOutCome(sql)]
     for up in upList:
-        directory = 'static/upFaces/'+str(up[1])+'.png'
+        directory = 'static/cupFaces/'+str(up[1])+'.png'
         if not os.path.exists(directory):
             img_deal(up[4],directory)
     return upList
@@ -21,7 +21,7 @@ def wreUpRank():
     sql = "SELECT `Rank`,`ID`,`Name`,`Sex`,`Face`,`Birthday`,`Place`,`Followings`,`Followers`,`Sign`,`Level`,`Official`,`Likes`,`Views` from `NewestTop100` ORDER BY `Rank`;"
     upList = [(Rank,ID,Name,Sex,Face,Birthday,Place,Followings,Followers,Sign,Level,Official,Likes,Views) for (Rank,ID,Name,Sex,Face,Birthday,Place,Followings,Followers,Sign,Level,Official,Likes,Views,) in mysqlconnect.queryOutCome(sql)]
     for up in upList:
-        directory = 'static/upFaces/'+str(up[1])+'.png'
+        directory = 'static/cupFaces/'+str(up[1])+'.png'
         if not os.path.exists(directory):
             img_deal(up[4],directory)
     return upList
@@ -31,7 +31,7 @@ def webVideoRank(fields):
     sql = f"SELECT `Rank`,`Title`,`BVid`,`Play`,`View`,`Up`,`Up_ID`,`Cover_URL` from `{fields}` ORDER BY `Rank`;"
     vList = [(Rank,Title,BVid,Play,View,Up,Up_ID,Cover_URL) for (Rank,Title,BVid,Play,View,Up,Up_ID,Cover_URL,) in mysqlconnect.queryOutCome(sql)]
     for v in vList:
-        directory = 'static/videoFaces/'+str(v[2])+'.png'
+        directory = 'static/cvideoFaces/'+str(v[2])+'.png'
         if not os.path.exists(directory):
             cover_deal(v[-1],directory)
     #print(vList)
