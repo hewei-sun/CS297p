@@ -64,6 +64,15 @@ class Uploader:
         url = f'https://api.bilibili.com/x/web-interface/card?mid={self.uid}&jsonp=jsonp&article=true'
         print(url)
         _json = requests.session().get(url, headers=headers, timeout=5).json()
+
+        if _json['message']=='啥都木有':
+            print('Page Not Found.\n'
+                  'Please check your input, you may entered a non-exsisted Up ID.')
+            return False
+        if not _json['data']:
+            print('Your requests are too frequent, please take a break and come back later.')
+            return False
+
         card = _json['data']['card']
         self.name = card['name']
         if card['sex']=='男':
@@ -91,6 +100,8 @@ class Uploader:
         self.level = card['level_info']['current_level']
         if card['Official']:
             self.official = card['Official']['title'] + '\n' + card['Official']['desc']
+
+        return True
 
     def extract_videoInfo1(self, dict): # used to collect master piece
         v = Video()
