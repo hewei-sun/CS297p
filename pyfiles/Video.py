@@ -73,31 +73,42 @@ class Video:
     def start_crawlling(self, for_rank=False):
         if not self.bvid:
             print("No BVid Given Yet.")
-            return
+            return False
+
         if self.bvid[0:2] != 'BV':  # 官方番剧/动画
             url = f'https://www.bilibili.com/bangumi/play/{self.bvid}'
             print(url)
             headers['referer'] = url
             spider = Spider(url, headers)
             spider.setSoup()
+            if spider.soup.find('div', {'class':'error-container'}):  # either id not exsist, either you are blcoked
+                print('The page not exsisted.\n'
+                      'Please check your input is valid, you may entered a non-exsited ID.\n'
+                      'Or your requests are too frequent, please take a break and come back later.')
+                return False
             self.title = spider.soup.find('title').text
             if not for_rank: self.description = spider.soup.find('meta', {'name':'description'}).get('content')
             self.up_name = spider.soup.find('meta', {'name':'author'}).get('content')
             self.cover_url = spider.soup.find('meta', {'property':'og:image'}).get('content')
-            return
+            return True
 
         url = f'https://www.bilibili.com/video/{self.bvid}'
         print(url)
         headers['referer'] = url
         spider = Spider(url, headers)
         spider.setSoup()
+        if spider.soup.find('div', {'class':'error-container'}):  # either id not exsist, either you are blcoked
+            print('The page not exsisted.\n'
+                  'Please check your input is valid, you may entered a non-exsited ID.\n'
+                  'Or your requests are too frequent, please take a break and come back later.')
+            return False
 
         if spider.soup.find('div', {'id':'app', 'class':'main-container clearfix'}):
             self.title = spider.soup.find('title').text
             if not for_rank: self.description = spider.soup.find('meta', {'name': 'description'}).get('content')
             self.up_name = spider.soup.find('meta', {'name': 'author'}).get('content')
             self.cover_url = spider.soup.find('meta', {'property': 'og:image'}).get('content')
-            return
+            return True
 
         self.description = spider.soup.find('meta',{'itemprop':'description'}).get('content')
         statistics = spider.soup.find('div',{'id':'viewbox_report'}).find_all('span')
@@ -136,8 +147,7 @@ class Video:
             for item in spider.soup.find_all('li', {'class':'tag'}):
                 self.tags.append(item.text.strip())
 
-
-
+        return True
 
     def get_cid(self):
         url = 'https://api.bilibili.com/x/web-interface/view?bvid={}'.format(self.bvid)
