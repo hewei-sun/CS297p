@@ -11,8 +11,8 @@ function showRelation(id,relation,ups){
         });
     }
     datas.forEach(function (node) {
-        node.x=parseInt(Math.random()*1000);  //这里是最重要的如果数据中有返回节点x,y位置这里就不用设置，如果没有这里一定要设置node.x和node.y，不然无法定位节点 也实现不了拖拽了；
-        node.y=parseInt(Math.random()*1000);
+        node.x=parseInt(Math.random()*3000);  //这里是最重要的如果数据中有返回节点x,y位置这里就不用设置，如果没有这里一定要设置node.x和node.y，不然无法定位节点 也实现不了拖拽了；
+        node.y=parseInt(Math.random()*2500);
         node.symbolSize=[42,42];
         node.sizeFlag=[42,42];
         /*if(node.attributes.modularity_class != 4){
@@ -25,7 +25,7 @@ function showRelation(id,relation,ups){
         //node.category = node.attributes.modularity_class;
         node.label={
             normal:{
-                show:true
+                show:false
             }
         }
     });
@@ -39,9 +39,9 @@ function showRelation(id,relation,ups){
     var winWidth=document.body.clientWidth;
     var winHeight=document.body.clientHeight;
     var option = {
-        title: {
-            text: 'uploader relationship'
-        },
+        //title: {
+            //text: 'uploader relationship'
+        //},
         tooltip: {},
         animationDurationUpdate: 1500,
         animationEasingUpdate: 'quinticInOut',

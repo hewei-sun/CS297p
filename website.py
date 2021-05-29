@@ -137,6 +137,7 @@ def videoA(bid):
                 bid = searchVideo(vi)
             else:
                 bid = vi
+        print(bid)
         return redirect(url_for('videoA',bid = bid))
     videos = videoAna(bid)
     return render_template('videoA.html',videos = json.dumps(videos,default = lambda x:x.__dict__,indent=4,separators=(',',':')))    

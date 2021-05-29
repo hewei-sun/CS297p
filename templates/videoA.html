@@ -10,6 +10,7 @@
         <script src="/static/bootstrap/js/bootstrap/3.3.6/bootstrap.min.js"></script>
         <script src="/static/echarts/echarts.min.js"></script>
         <script src="/static/js/menu.js"></script>
+        <script src="/static/js/videoInfo.js"></script>
     </head>
     <body>
         <button type="button" class="btn btn-default"  style="width:180px;height:50px" onclick="javascript:self.location='index'">back</button>
@@ -38,10 +39,16 @@
                         <button class="btn btn-primary">search</button>
             </h4></center>
         </form>
+        <center><div id="video"></div></center>
+        <center>
+            <button type="button" class="btn btn-default"  style="width:180px;height:50px" onclick="wordCloud()">Whole Word Cloud</button>
+            <button type="button" class="btn btn-default"  style="width:180px;height:50px" onclick="wordClouda()">ADJ. Word Cloud</button>
+        </center>
         <center><a href="#top" target="_self">top</a></center>
     </body>
 </html>
 <script type="text/javascript">
-    var video=eval({{videos|tojson}})
-    console.log(video)
+    var video=eval({{videos|tojson}});
+    console.log(video);
+    basicShow(video[0]);
 </script>

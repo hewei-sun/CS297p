@@ -15,6 +15,10 @@ user_agents='Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 
 headers = {'user-agent': user_agents,
            'referer': ''}
 
+def deleteWan(str):
+    if str[-1]=='万':
+        return int(float(str[:-1])*10000)
+    return int(str)
 
 class Video:
     def __init__(self, bvid=None):
@@ -43,6 +47,7 @@ class Video:
     def __str__(self):
         return '{}.\tTitle:{}\tBVID:{}\tPlay:{}\tView:{}\t' \
                'Author:{}\tAuthourID:{}\tCoverURL:{}\n'.format(self.rank, self.title, self.bvid,self.play, self.view, self.up_name, self.up_id,self.cover_url)
+               
     def printInfo(self):
         for key,val in self.__dict__.items():
             if val: print(key,' : ',val)
@@ -98,7 +103,10 @@ class Video:
         statistics = spider.soup.find('div',{'id':'viewbox_report'}).find_all('span')
         self.title = statistics[0].text
         self.play = statistics[1].text[:-5]
-        self.view = statistics[2].text[:-2]
+        play = statistics[1].text[:-5]
+        if play: self.play = deleteWan(play)
+        view = statistics[2].text[:-2]
+        if view: self.view = deleteWan(view)
         if not for_rank: self.publish_time = statistics[3].text
         if len(statistics)>4 and not for_rank: # the video has a history rank
             self.rank = statistics[4].text.strip()
@@ -118,10 +126,14 @@ class Video:
         self.cover_url = spider.soup.find('meta', {'itemprop': 'image'}).get('content')
 
         if not for_rank:
-            self.like = spider.soup.find('span',{'class':'like'}).text.strip()  # 点赞
-            self.coin = spider.soup.find('span',{'class':'coin'}).text.strip()  # 币
-            self.collect = spider.soup.find('span',{'class':'collect'}).text.strip()  # 收藏
-            self.share = spider.soup.find('span',{'class':'share'}).text.strip()  # 转发
+            like = spider.soup.find('span',{'class':'like'}).text.strip()  # 点赞
+            if like: self.like = deleteWan(like)
+            coin = spider.soup.find('span',{'class':'coin'}).text.strip()  # 币
+            if coin: self.coin = deleteWan(coin)
+            collect = spider.soup.find('span',{'class':'collect'}).text.strip()  # 收藏
+            if collect: self.collect = deleteWan(collect)
+            share = spider.soup.find('span',{'class':'share'}).text.strip()  # 转发
+            if share: self.share = deleteWan(share)
             for item in spider.soup.find_all('li', {'class':'tag'}):
                 self.tags.append(item.text.strip())
 

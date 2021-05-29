@@ -17,6 +17,11 @@ def delEmojis(text): # delete emojis in the given text, used for title of video
            "]+", flags=re.UNICODE)
     return emoji_pattern.sub(r' ', text)
 
+def deleteWan(str):
+    if str[-1]=='万':
+        return int(float(str[:-1])*10000)
+    return int(str)
+
 def getRanking(field, url):  # Crawl a single ranking page
     spider = Spider(url,headers)
     spider.setSoup()
@@ -30,8 +35,10 @@ def getRanking(field, url):  # Crawl a single ranking page
         v.title = delEmojis(itm.find('a', {'class': 'title'}).text)
         #v.score = itm.find('div', {'class': 'pts'}).find('div').text
         dataBox = itm.find('div', {'class': 'detail'}).find_all('span')
-        v.play = dataBox[0].text.strip()  # 播放量
-        v.view = dataBox[1].text.strip()  # 弹幕
+        play = dataBox[0].text.strip()  # 播放量
+        if play: v.play = deleteWan(play)
+        view = dataBox[1].text.strip()  # 弹幕
+        if view: v.view = deleteWan(view)
         v.up_name = dataBox[2].text.strip()
         v.up_id = itm.find('div', {'class': 'detail'}).find('a').get('href')[len('//space.bilibili.com/'):]
         v.cover_url = v.get_cover()
