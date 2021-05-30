@@ -58,7 +58,8 @@ def cover_deal(url,path):
         print(path)
         return
     img = url_to_image(url)
-    cv2.imwrite(path, img)
+    imgCompressed = compress_img_CV(img)
+    cv2.imwrite(path, imgCompressed)
     
 if __name__ == "__main__":
     path = "http://i0.hdslb.com/bfs/face/27f0467f90da15f399ee399bb7c5dff08f0fe048.jpg"
