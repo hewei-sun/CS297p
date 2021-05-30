@@ -160,16 +160,23 @@ class Video:
         # collect all live screen and save them into a dataframe
         cid = self.get_cid()
         url = f'https://comment.bilibili.com/{cid}.xml'
-        #print(url)
+        print(url)
         request = requests.get(url)
         request.encoding='utf8'
         soup = BeautifulSoup(request.text, 'lxml')
-        danmuku = [i.text for i in soup.find_all('d')]
+        danmuku = [] # will store tuples (send_time, actual_time, content)
+        for item in soup.find_all('d'):
+            parameters = item.get('p').split(',')
+            send_time = float(parameters[0]) # unit is second
+            actual_time = time.strftime("%Y-%m-%d %H:%M:%S",time.localtime(int(parameters[4])))
+            content = item.text
+            danmuku.append((send_time, actual_time, content))
+        danmuku.sort(key=lambda x:x[0])
         return danmuku
 
     def segment_danmuku(self):
         # get rid of digits, spaces, invalid words
-        danmuku = self.collect_danmuku()
+        danmuku = [i[2] for i in self.collect_danmuku()]
         print('# OF Danmuku:', len(danmuku))
         segment_words = []
         for danmu in danmuku:
@@ -212,7 +219,7 @@ class Video:
     def generate_wordscloud_2(self):
         # generate words cloud for only adjective words
         import jieba.posseg as psg
-        danmuku = self.collect_danmuku()
+        danmuku = [i[2] for i in self.collect_danmuku()]
         words_list = []
         for danmu in danmuku:
             words = psg.cut(danmu)
@@ -239,23 +246,26 @@ class Video:
         plt.imshow(wc)
         plt.axis('off')
         plt.show()
-
+    '''
     def get_oid(self, url):
+        print(url)
         headers = {
             'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.75 Safari/537.36'}
         r = requests.get(url, headers=headers)
         res = r.text
         patten = '<meta data-vue-meta="true" itemprop="url" content="https://www.bilibili.com/video/av(.*?)/">'
         oid = re.findall(patten, res)
+        print(oid)
         aim_oid = oid[0]
         patten1 = '<meta data-vue-meta="true" property="og:title" content="(.*?)">'
         video_title = re.findall(patten1, res)
         if video_title:
             self.video_title = video_title[0].split('_哔哩哔哩')[0]
         return aim_oid
-
-    def comments_parse(self, hot_num = None, max=None):
-        oid = self.get_oid(f'https://www.bilibili.com/video/{self.bvid}')
+    '''
+    def comments_parse(self, max=None):
+        oid = self.get_cid()
+        #oid = self.get_oid(f'https://www.bilibili.com/video/{self.bvid}')
         n = 1
         i = 0
         headers={'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
@@ -265,7 +275,8 @@ class Video:
         try:
             while i<max:
                 if max and i>=max: break
-                url = f'https://api.bilibili.com/x/v2/reply?jsonp=jsonp&pn={n}&type=1&oid={oid}&sort=2'
+                url = f'https://api.bilibili.com/x/v2/reply?jsonp=jsonp&pn={n}&type=1&oid={588260403}&sort=2'
+                print(url)
                 print('Visiting comment page: ',url)
                 r = requests.get(url.format(n), headers=headers, timeout=5)
                 _json = json.loads(r.text)
@@ -297,7 +308,6 @@ class Video:
                     continue
                 # Inner loop was broken, break the outer.
                 break
-
         except:
             pass
 
@@ -306,9 +316,16 @@ class Video:
 
 if __name__ == "__main__":
     v = Video()
-    v.bvid = 'BV1hK4y1R7jH'
+    v.bvid = 'BV1VB4y1u799'
     v.start_crawlling()
     v.printInfo()
-    #v.comments_parse(50).to_csv('comments.csv')
+    v.collect_danmuku()
+    v.comments_parse(50).to_csv('comments.csv')
     v.generate_wordscloud_1()
     v.generate_wordscloud_2()
+    '''
+    v = Video()
+    v.bvid = 'BV1'
+    print(v.start_crawlling())
+    '''
+
