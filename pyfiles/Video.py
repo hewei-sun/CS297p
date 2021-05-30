@@ -18,7 +18,11 @@ headers = {'user-agent': user_agents,
 def deleteWan(str):
     if str[-1]=='万':
         return int(float(str[:-1])*10000)
-    return int(str)
+    try:
+        ret = int(str)
+        return ret
+    except: # 如果没有share/coin那些，爬下来的就是纯文字，比如：'分享'，'投币'这样
+        return 0
 
 class Video:
     def __init__(self, bvid=None):
@@ -38,10 +42,10 @@ class Video:
         self.publish_time = None
         self.duration = None
         self.reply = None #评论
-        self.like = None #点赞
-        self.coin = None #币
-        self.collect = None #收藏
-        self.share = None #转发
+        self.like = 0 #点赞
+        self.coin = 0 #币
+        self.collect = 0 #收藏
+        self.share = 0 #转发
         self.tags = []  # ordered by weight, more left more weighted.
 
     def __str__(self):
@@ -111,15 +115,15 @@ class Video:
             return True
 
         self.description = spider.soup.find('meta',{'itemprop':'description'}).get('content')
-        statistics = spider.soup.find('div',{'id':'viewbox_report'}).find_all('span')
-        self.title = statistics[0].text
-        play = statistics[1].text[:-5]
+        #statistics = spider.soup.find('div',{'id':'viewbox_report'}).find_all('span')
+        self.title = spider.soup.find('meta',{'itemprop':'name'}).get('content')
+        play = spider.soup.find('span',{'class':'view'}).text[:-5]
         if play: self.play = deleteWan(play)
-        view = statistics[2].text[:-2]
+        view = spider.soup.find('span',{'class':'dm'}).text[:-2]
         if view: self.view = deleteWan(view)
-        if not for_rank: self.publish_time = statistics[3].text
-        if len(statistics)>4 and not for_rank: # the video has a history rank
-            self.rank = statistics[4].text.strip()
+        if not for_rank: self.publish_time = spider.soup.find('meta',{'itemprop':'uploadDate'}).get('content')
+        if spider.soup.find('span',{'class':'rank'}) and not for_rank: # the video has a history rank
+            self.rank = spider.soup.find('span',{'class':'rank'}).text.strip()
         # 独立作者 or 协作团队
         single_up = spider.soup.find('div',{'class':'up-info_right'})
         if single_up:
@@ -132,9 +136,12 @@ class Video:
                 up = team.find_all('div',{'class':'avatar-name__container'})[0].find('a')
                 self.up_id = up.get('href')[len('//space.bilibili.com/'):]
                 self.up_name = up.text.strip()
-
+        url = f'https://api.bilibili.com/x/player/pagelist?bvid={self.bvid}&jsonp=jsonp'
+        r = requests.session().get(url, timeout=5)
+        json = r.json()
+        if json['data']: self.duration = json['data'][0]['duration']
+        print(self.duration)
         self.cover_url = spider.soup.find('meta', {'itemprop': 'image'}).get('content')
-
         if not for_rank:
             like = spider.soup.find('span',{'class':'like'}).text.strip()  # 点赞
             if like: self.like = deleteWan(like)
@@ -201,16 +208,16 @@ class Video:
         frequency = self.segment_danmuku()
         background_image = plt.imread('background.jpg')
         wc = WordCloud(
-            background_color='black',
+            background_color='white',
             font_path='font/chinese.simhei.ttf',
             #stopwords=STOPWORDS,
-            mask=background_image,
+            #mask=background_image,
             max_words=10000,
-            max_font_size=500,
+            max_font_size=250,
             random_state=30)
         wc.generate_from_frequencies(frequency)
-        image_colors = ImageColorGenerator(background_image)
-        wc.recolor(color_func=image_colors)
+        #image_colors = ImageColorGenerator(background_image)
+        #wc.recolor(color_func=image_colors)
         plt.figure(figsize=(15, 10))
         plt.imshow(wc)
         plt.axis('off')
@@ -232,20 +239,21 @@ class Video:
         tag_list = {i[1]: i[2] for i in df_a_count.values}
         background_image = plt.imread('background.jpg')
         wc = WordCloud(
-            background_color='black',
+            background_color='white',
             font_path='font/chinese.simhei.ttf',
             # stopwords=STOPWORDS,
-            mask=background_image,
+            #mask=background_image,
             max_words=10000,
-            max_font_size=500,
+            max_font_size=250,
             random_state=30)
         wc.generate_from_frequencies(tag_list)
-        image_colors = ImageColorGenerator(background_image)
-        wc.recolor(color_func=image_colors)
+        #image_colors = ImageColorGenerator(background_image)
+        #wc.recolor(color_func=image_colors)
         plt.figure(figsize=(14, 8))
         plt.imshow(wc)
         plt.axis('off')
         plt.show()
+           
     '''
     def get_oid(self, url):
         print(url)
