@@ -213,7 +213,7 @@ class Video:
             #stopwords=STOPWORDS,
             #mask=background_image,
             max_words=10000,
-            max_font_size=250,
+            max_font_size=100,
             random_state=30)
         wc.generate_from_frequencies(frequency)
         #image_colors = ImageColorGenerator(background_image)
@@ -244,7 +244,7 @@ class Video:
             # stopwords=STOPWORDS,
             #mask=background_image,
             max_words=10000,
-            max_font_size=250,
+            max_font_size=100,
             random_state=30)
         wc.generate_from_frequencies(tag_list)
         #image_colors = ImageColorGenerator(background_image)
